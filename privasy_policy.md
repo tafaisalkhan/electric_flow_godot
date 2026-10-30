@@ -52,7 +52,8 @@ Electric Flow is designed for general and family audiences. We do not knowingly 
 
 ## 7. Contact Us
 For any privacy questions or inquiries regarding Electric Flow:
-- **Email:** support@electricflowgame.com  
+- **Developer:** Muhammad Faisal Khan
+- **Email:** muhammadfaisal78@gmail.com  
 - **Package ID:** `com.electricflow.game`  
 
 *© 2026 Electric Flow. All rights reserved.*
