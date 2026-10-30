@@ -24,7 +24,7 @@ function encodePNG(width, height, rgbaBuffer) {
     rgbaBuffer.copy(filtered, y * (rowLen + 1) + 1, y * rowLen, (y + 1) * rowLen);
   }
   const idatData = zlib.deflateSync(filtered, { level: 9 });
-  
+
   function makeChunk(type, data) {
     const len = data.length;
     const buf = Buffer.alloc(12 + len);
@@ -35,17 +35,17 @@ function encodePNG(width, height, rgbaBuffer) {
     buf.writeUInt32BE(crc, 8 + len);
     return buf;
   }
-  
+
   const header = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   const ihdrData = Buffer.alloc(13);
   ihdrData.writeUInt32BE(width, 0);
   ihdrData.writeUInt32BE(height, 4);
-  ihdrData[8] = 8; // bit depth
-  ihdrData[9] = 6; // RGBA
+  ihdrData[8] = 8;
+  ihdrData[9] = 6;
   ihdrData[10] = 0;
   ihdrData[11] = 0;
   ihdrData[12] = 0;
-  
+
   return Buffer.concat([
     header,
     makeChunk('IHDR', ihdrData),
@@ -54,7 +54,7 @@ function encodePNG(width, height, rgbaBuffer) {
   ]);
 }
 
-// 2D High precision rendering canvas
+// High Precision 2D Antialiased Canvas
 class IconCanvas {
   constructor(size) {
     this.size = size;
@@ -84,7 +84,6 @@ class IconCanvas {
     this.buf[idx + 3] = Math.min(255, Math.max(0, Math.round(outA * 255)));
   }
 
-  // Draw radial glow
   drawRadialGlow(cx, cy, r, color, maxAlpha = 1.0, falloff = 2.0) {
     const x0 = Math.max(0, Math.floor(cx - r));
     const x1 = Math.min(this.size - 1, Math.ceil(cx + r));
@@ -108,7 +107,6 @@ class IconCanvas {
     }
   }
 
-  // Draw circle
   drawCircle(cx, cy, radius, color, feather = 1.0) {
     const x0 = Math.max(0, Math.floor(cx - radius - feather));
     const x1 = Math.min(this.size - 1, Math.ceil(cx + radius + feather));
@@ -129,14 +127,11 @@ class IconCanvas {
     }
   }
 
-  // Draw thick antialiased line segment
   drawLine(x0, y0, x1, y1, width, color) {
     const dx = x1 - x0;
     const dy = y1 - y0;
     const len = Math.sqrt(dx * dx + dy * dy);
     if (len === 0) return;
-    const nx = -dy / len;
-    const ny = dx / len;
     const hw = width * 0.5;
 
     const minX = Math.max(0, Math.floor(Math.min(x0, x1) - hw - 1));
@@ -146,7 +141,6 @@ class IconCanvas {
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
-        // Project onto line segment
         const t = ((x - x0) * dx + (y - y0) * dy) / (len * len);
         const clampedT = Math.max(0.0, Math.min(1.0, t));
         const px = x0 + clampedT * dx;
@@ -160,7 +154,6 @@ class IconCanvas {
     }
   }
 
-  // Draw polygon with smooth edges
   drawPolygon(points, color) {
     let minX = this.size, maxX = 0, minY = this.size, maxY = 0;
     for (const p of points) {
@@ -185,7 +178,6 @@ class IconCanvas {
       return inside;
     }
 
-    // 2x2 supersampling for crisp edges
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
         let count = 0;
@@ -201,262 +193,241 @@ class IconCanvas {
   }
 }
 
-// Master Icon Generator function
-function generateElectricFlowIcon(size, isForegroundOnly = false) {
+// Render New Electric Flow Icon with Maximum Polish
+function renderElectricFlowIcon(size, isForegroundOnly = false) {
   const canvas = new IconCanvas(size);
-  const s = size / 512.0; // scale factor
+  const s = size / 512.0;
+  const cx = size * 0.5;
+  const cy = 230 * s;
 
-  // 1. BACKGROUND (Skipped if foreground-only adaptive icon)
+  // 1. BACKGROUND (Skipped for transparent adaptive foreground)
   if (!isForegroundOnly) {
-    const cx = size * 0.5;
-    const cy = size * 0.5;
     const maxR = size * 0.72;
-
     for (let y = 0; y < size; y++) {
-      const ny = y / size;
       for (let x = 0; x < size; x++) {
-        const nx = x / size;
         const dx = x - cx;
-        const dy = y - cy;
+        const dy = y - (size * 0.48);
         const d = Math.sqrt(dx * dx + dy * dy) / maxR;
-
-        // Rich radial gradient: deep vibrant sapphire blue -> dark cyber navy
-        // Center: #082954, Edge: #020914
         const t = Math.min(1.0, d);
-        const r = Math.round((8 * (1.0 - t) + 2 * t) / 255.0 * 255);
-        const g = Math.round((42 * (1.0 - t) + 9 * t) / 255.0 * 255);
-        const b = Math.round((92 * (1.0 - t) + 22 * t) / 255.0 * 255);
-        canvas.setPixel(x, y, r / 255.0, g / 255.0, b / 255.0, 1.0);
+
+        // Vibrant cyber sapphire center (#0a2d5e) fading to deep dark midnight navy (#020813)
+        const r = (10 * (1 - t) + 2 * t) / 255.0;
+        const g = (45 * (1 - t) + 8 * t) / 255.0;
+        const b = (94 * (1 - t) + 19 * t) / 255.0;
+        canvas.setPixel(x, y, r, g, b, 1.0);
       }
     }
 
-    // Modern cyber grid pattern
-    const gridStep = 32 * s;
-    for (let pos = gridStep; pos < size; pos += gridStep) {
-      canvas.drawLine(pos, 0, pos, size, 1.0 * s, [0.0, 0.45, 0.75, 0.12]);
-      canvas.drawLine(0, pos, size, pos, 1.0 * s, [0.0, 0.45, 0.75, 0.12]);
+    // Modern Circuit Grid Lines
+    const step = 32 * s;
+    for (let p = step; p < size; p += step) {
+      canvas.drawLine(p, 0, p, size, 1.0 * s, [0.0, 0.55, 0.9, 0.10]);
+      canvas.drawLine(0, p, size, p, 1.0 * s, [0.0, 0.55, 0.9, 0.10]);
     }
 
-    // Outer subtle neon rim glow
-    canvas.drawRadialGlow(cx, cy, 240 * s, [0.0, 0.85, 1.0], 0.22, 2.5);
+    // Outer Icon Beveled Frame & Corner Accent
+    const m = 14 * s;
+    canvas.drawLine(m, m, size - m, m, 2.0 * s, [0.0, 0.75, 1.0, 0.45]);
+    canvas.drawLine(size - m, m, size - m, size - m, 2.0 * s, [0.0, 0.75, 1.0, 0.45]);
+    canvas.drawLine(size - m, size - m, m, size - m, 2.0 * s, [0.0, 0.75, 1.0, 0.45]);
+    canvas.drawLine(m, size - m, m, m, 2.0 * s, [0.0, 0.75, 1.0, 0.45]);
+
+    // Outer Ambient Glow
+    canvas.drawRadialGlow(cx, cy, 240 * s, [0.0, 0.8, 1.0], 0.28, 2.2);
   }
 
-  // 2. CIRCUIT TRACES (Neon cyan / electric turquoise with glow)
+  // 2. GLOWING CIRCUIT TRACKS
   const neonCyan = [0.0, 0.95, 1.0, 0.95];
   const neonGold = [1.0, 0.85, 0.15, 1.0];
-  const glowCyan = [0.0, 0.85, 1.0];
 
   const traces = [
-    // Left branch 1
-    [[45 * s, 145 * s], [125 * s, 145 * s], [175 * s, 195 * s]],
-    // Left branch 2
-    [[45 * s, 256 * s], [145 * s, 256 * s]],
-    // Left branch 3
-    [[45 * s, 365 * s], [125 * s, 365 * s], [175 * s, 315 * s]],
-    // Right branch 1
-    [[467 * s, 145 * s], [387 * s, 145 * s], [337 * s, 195 * s]],
-    // Right branch 2
-    [[467 * s, 256 * s], [367 * s, 256 * s]],
-    // Right branch 3
-    [[467 * s, 365 * s], [387 * s, 365 * s], [337 * s, 315 * s]],
     // Top feeder
-    [[256 * s, 45 * s], [256 * s, 110 * s]],
+    [[cx, 35 * s], [cx, 110 * s]],
     // Bottom feeder
-    [[256 * s, 467 * s], [256 * s, 400 * s]]
+    [[cx, 475 * s], [cx, 400 * s]],
+    // Left routes
+    [[35 * s, 145 * s], [120 * s, 145 * s], [165 * s, 190 * s]],
+    [[35 * s, 250 * s], [140 * s, 250 * s]],
+    [[35 * s, 355 * s], [120 * s, 355 * s], [165 * s, 310 * s]],
+    // Right routes
+    [[477 * s, 145 * s], [392 * s, 145 * s], [347 * s, 190 * s]],
+    [[477 * s, 250 * s], [372 * s, 250 * s]],
+    [[477 * s, 355 * s], [392 * s, 355 * s], [347 * s, 310 * s]]
   ];
 
-  // Draw traces with bloom
   for (const poly of traces) {
     for (let i = 0; i < poly.length - 1; i++) {
       const p0 = poly[i];
       const p1 = poly[i + 1];
-      // Glow underlay
-      canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 10 * s, [0.0, 0.65, 1.0, 0.35]);
-      // Core sharp line
+      // Cyan bloom underlay
+      canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 12.0 * s, [0.0, 0.7, 1.0, 0.35]);
+      // Core neon wire
       canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 4.5 * s, neonCyan);
-      // Bright center core
-      canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 1.5 * s, [0.8, 1.0, 1.0, 0.9]);
+      // Bright white central energy core
+      canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 1.5 * s, [0.85, 1.0, 1.0, 0.95]);
     }
   }
 
-  // Circuit Terminal Nodes (Golden solder pads with glowing center)
+  // Golden Terminal Nodes
   const terminals = [
-    [45 * s, 145 * s], [45 * s, 256 * s], [45 * s, 365 * s],
-    [467 * s, 145 * s], [467 * s, 256 * s], [467 * s, 365 * s],
-    [256 * s, 45 * s], [256 * s, 467 * s]
+    [cx, 35 * s], [cx, 475 * s],
+    [35 * s, 145 * s], [35 * s, 250 * s], [35 * s, 355 * s],
+    [477 * s, 145 * s], [477 * s, 250 * s], [477 * s, 355 * s]
   ];
 
   for (const pt of terminals) {
-    canvas.drawRadialGlow(pt[0], pt[1], 16 * s, [1.0, 0.8, 0.1], 0.65, 2.0);
-    canvas.drawCircle(pt[0], pt[1], 7 * s, [0.0, 0.2, 0.4, 0.9]);
+    canvas.drawRadialGlow(pt[0], pt[1], 18 * s, [1.0, 0.8, 0.1], 0.75, 1.8);
+    canvas.drawCircle(pt[0], pt[1], 7.5 * s, [0.0, 0.22, 0.42, 0.9]);
     canvas.drawCircle(pt[0], pt[1], 5.5 * s, neonGold);
     canvas.drawCircle(pt[0], pt[1], 2.5 * s, [1.0, 1.0, 0.9, 1.0]);
   }
 
-  // 3. BULB AMBIENT ENERGY BLOOM
-  canvas.drawRadialGlow(256 * s, 215 * s, 160 * s, [0.0, 0.85, 1.0], 0.35, 1.8);
-  canvas.drawRadialGlow(256 * s, 215 * s, 100 * s, [1.0, 0.85, 0.2], 0.65, 2.0);
-  canvas.drawRadialGlow(256 * s, 215 * s, 50 * s, [1.0, 1.0, 0.8], 0.95, 2.2);
+  // 3. GLOWING ENERGY BLOOM
+  canvas.drawRadialGlow(cx, cy, 210 * s, [0.0, 0.85, 1.0], 0.40, 1.7);
+  canvas.drawRadialGlow(cx, cy, 130 * s, [1.0, 0.85, 0.2], 0.70, 1.8);
+  canvas.drawRadialGlow(cx, cy, 60 * s, [1.0, 1.0, 0.8], 0.98, 2.0);
 
-  // 4. BULB GLASS ENVELOPE (Dark transparent glass with cyan refraction)
+  // 4. BULB GLASS ENVELOPE (Smooth curve)
   const bulbPoints = [];
   const segments = 48;
   for (let i = 0; i <= segments; i++) {
     const angle = Math.PI * 0.18 + (i / segments) * (Math.PI * 1.64);
-    const r = 95 * s;
-    const bx = 256 * s + Math.cos(angle) * r;
-    const by = 215 * s - Math.sin(angle) * r;
+    const r = 104 * s;
+    const bx = cx + Math.cos(angle) * r;
+    const by = cy - Math.sin(angle) * r;
     bulbPoints.push([bx, by]);
   }
-  // Neck inward taper
-  bulbPoints.push([308 * s, 312 * s]);
-  bulbPoints.push([308 * s, 328 * s]);
-  bulbPoints.push([204 * s, 328 * s]);
-  bulbPoints.push([204 * s, 312 * s]);
+  bulbPoints.push([cx + 52 * s, cy + 104 * s]);
+  bulbPoints.push([cx + 52 * s, cy + 120 * s]);
+  bulbPoints.push([cx - 52 * s, cy + 120 * s]);
+  bulbPoints.push([cx - 52 * s, cy + 104 * s]);
 
-  // Fill tinted glass
-  canvas.drawPolygon(bulbPoints, [0.02, 0.12, 0.26, 0.55]);
+  // Dark tinted glass body
+  canvas.drawPolygon(bulbPoints, [0.02, 0.14, 0.28, 0.55]);
 
-  // Outer glass cyan outline
+  // Glass Neon Outline
   for (let i = 0; i < bulbPoints.length - 1; i++) {
-    canvas.drawLine(bulbPoints[i][0], bulbPoints[i][1], bulbPoints[i + 1][0], bulbPoints[i + 1][1], 5 * s, [0.3, 0.85, 1.0, 0.85]);
-    canvas.drawLine(bulbPoints[i][0], bulbPoints[i][1], bulbPoints[i + 1][0], bulbPoints[i + 1][1], 1.5 * s, [0.85, 1.0, 1.0, 0.95]);
+    canvas.drawLine(bulbPoints[i][0], bulbPoints[i][1], bulbPoints[i + 1][0], bulbPoints[i + 1][1], 5.5 * s, [0.35, 0.9, 1.0, 0.9]);
+    canvas.drawLine(bulbPoints[i][0], bulbPoints[i][1], bulbPoints[i + 1][0], bulbPoints[i + 1][1], 1.8 * s, [0.9, 1.0, 1.0, 1.0]);
   }
 
-  // Glass Specular Curved Highlight
-  for (let a = 2.1; a <= 2.9; a += 0.04) {
-    const hx = 256 * s + Math.cos(a) * 78 * s;
-    const hy = 215 * s - Math.sin(a) * 78 * s;
-    canvas.drawCircle(hx, hy, 4.5 * s, [1.0, 1.0, 1.0, 0.75]);
+  // Specular Reflection Curved Highlight
+  for (let a = 2.1; a <= 2.9; a += 0.03) {
+    const hx = cx + Math.cos(a) * 86 * s;
+    const hy = cy - Math.sin(a) * 86 * s;
+    canvas.drawCircle(hx, hy, 4.8 * s, [1.0, 1.0, 1.0, 0.8]);
   }
 
-  // 5. BRASS SCREW BASE (Stepped metallic base)
-  const brassBaseColor = [0.92, 0.72, 0.18, 1.0];
-  const brassShadow = [0.55, 0.40, 0.08, 1.0];
-  const brassHighlight = [1.0, 0.94, 0.65, 1.0];
-
-  function drawBrassSegment(y, w, h) {
-    const x0 = (256 - w * 0.5) * s;
-    const x1 = (256 + w * 0.5) * s;
-    const y0 = y * s;
-    const y1 = (y + h) * s;
-    for (let cy = y0; cy <= y1; cy++) {
-      for (let cx = x0; cx <= x1; cx++) {
-        const u = (cx - x0) / ((x1 - x0) || 1);
+  // 5. BRASS SCREW BASE (Polished Metallic Sheen)
+  function drawBaseSegment(yOffset, w, h) {
+    const x0 = (cx - w * 0.5 * s);
+    const x1 = (cx + w * 0.5 * s);
+    const y0 = cy + yOffset * s;
+    const y1 = y0 + h * s;
+    for (let py = y0; py <= y1; py++) {
+      for (let px = x0; px <= x1; px++) {
+        const u = (px - x0) / ((x1 - x0) || 1);
         let col;
-        if (u < 0.25) col = brassShadow;
-        else if (u < 0.65) col = brassHighlight;
-        else col = brassBaseColor;
-        canvas.setPixel(cx, cy, col[0], col[1], col[2], 1.0);
+        if (u < 0.25) col = [0.58, 0.40, 0.09, 1.0];
+        else if (u < 0.65) col = [1.0, 0.95, 0.65, 1.0];
+        else col = [0.90, 0.72, 0.18, 1.0];
+        canvas.setPixel(px, py, col[0], col[1], col[2], 1.0);
       }
     }
-    // Rim highlight
-    canvas.drawLine(x0, y0, x1, y0, 1.5 * s, brassHighlight);
-    canvas.drawLine(x0, y1, x1, y1, 1.5 * s, brassShadow);
+    canvas.drawLine(x0, y0, x1, y0, 1.5 * s, [1.0, 0.95, 0.7, 1.0]);
+    canvas.drawLine(x0, y1, x1, y1, 1.5 * s, [0.5, 0.35, 0.08, 1.0]);
   }
 
-  drawBrassSegment(328, 104, 13);
-  drawBrassSegment(342, 96, 13);
-  drawBrassSegment(356, 84, 13);
+  drawBaseSegment(120, 108, 14);
+  drawBaseSegment(134, 100, 14);
+  drawBaseSegment(148, 88, 14);
 
-  // Bottom contact tip (dark ceramic + silver dot)
-  canvas.drawCircle(256 * s, 375 * s, 18 * s, [0.12, 0.12, 0.14, 1.0]);
-  canvas.drawCircle(256 * s, 375 * s, 9 * s, [0.85, 0.90, 0.95, 1.0]);
+  // Ceramic base & Silver contact
+  canvas.drawCircle(cx, cy + 168 * s, 18 * s, [0.12, 0.12, 0.14, 1.0]);
+  canvas.drawCircle(cx, cy + 168 * s, 9 * s, [0.85, 0.92, 0.98, 1.0]);
 
-  // 6. HIGH-VOLTAGE LIGHTNING BOLT FILAMENT (Center Star Feature!)
-  // Sharp, energetic lightning bolt
+  // 6. HIGH-VOLTAGE LIGHTNING BOLT CORE (Center Highlight)
   const boltOuter = [
-    [268 * s, 140 * s],
-    [206 * s, 218 * s],
-    [250 * s, 222 * s],
-    [212 * s, 298 * s],
-    [306 * s, 210 * s],
-    [260 * s, 206 * s],
-    [288 * s, 140 * s]
+    [cx + 14 * s, cy - 80 * s],
+    [cx - 55 * s, cy + 6 * s],
+    [cx - 7 * s, cy + 10 * s],
+    [cx - 50 * s, cy + 94 * s],
+    [cx + 54 * s, cy - 4 * s],
+    [cx + 4 * s, cy - 8 * s],
+    [cx + 36 * s, cy - 80 * s]
   ];
 
-  // Intense gold/white bolt glow
-  canvas.drawRadialGlow(256 * s, 220 * s, 75 * s, [1.0, 0.85, 0.2], 0.9, 1.8);
-  canvas.drawRadialGlow(256 * s, 220 * s, 35 * s, [1.0, 1.0, 1.0], 1.0, 2.0);
+  canvas.drawRadialGlow(cx, cy + 8 * s, 85 * s, [1.0, 0.85, 0.2], 0.95, 1.8);
+  canvas.drawRadialGlow(cx, cy + 8 * s, 40 * s, [1.0, 1.0, 1.0], 1.0, 2.0);
+  canvas.drawPolygon(boltOuter, [1.0, 0.84, 0.15, 1.0]);
 
-  // Draw vibrant gold bolt body
-  canvas.drawPolygon(boltOuter, [1.0, 0.82, 0.12, 1.0]);
-
-  // Draw pure white hot core
   const boltInner = [
-    [267 * s, 148 * s],
-    [218 * s, 216 * s],
-    [252 * s, 220 * s],
-    [224 * s, 286 * s],
-    [296 * s, 212 * s],
-    [262 * s, 208 * s],
-    [284 * s, 148 * s]
+    [cx + 13 * s, cy - 72 * s],
+    [cx - 42 * s, cy + 4 * s],
+    [cx - 5 * s, cy + 8 * s],
+    [cx - 36 * s, cy + 82 * s],
+    [cx + 44 * s, cy - 2 * s],
+    [cx + 6 * s, cy - 6 * s],
+    [cx + 31 * s, cy - 72 * s]
   ];
   canvas.drawPolygon(boltInner, [1.0, 1.0, 0.92, 1.0]);
 
-  // Bright bolt border
   for (let i = 0; i < boltOuter.length; i++) {
     const p0 = boltOuter[i];
     const p1 = boltOuter[(i + 1) % boltOuter.length];
-    canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 3.0 * s, [1.0, 0.95, 0.6, 1.0]);
+    canvas.drawLine(p0[0], p0[1], p1[0], p1[1], 3.5 * s, [1.0, 0.95, 0.65, 1.0]);
   }
 
   // 7. SPARKS & ELECTRICAL EMISSIONS
   const sparks = [
-    [175 * s, 180 * s, 5.0 * s, [1.0, 1.0, 1.0]],
-    [336 * s, 185 * s, 4.5 * s, [1.0, 1.0, 1.0]],
-    [185 * s, 268 * s, 4.0 * s, [0.0, 0.9, 1.0]],
-    [328 * s, 262 * s, 5.5 * s, [1.0, 0.9, 0.3]],
-    [256 * s, 92 * s, 6.0 * s, [1.0, 0.95, 0.4]],
-    [135 * s, 225 * s, 4.0 * s, [0.0, 1.0, 0.8]],
-    [376 * s, 220 * s, 4.0 * s, [0.0, 1.0, 0.8]]
+    [cx - 85 * s, cy - 35 * s, 5.0 * s, [1.0, 1.0, 1.0]],
+    [cx + 85 * s, cy - 30 * s, 5.0 * s, [1.0, 1.0, 1.0]],
+    [cx - 75 * s, cy + 55 * s, 4.5 * s, [0.0, 0.9, 1.0]],
+    [cx + 75 * s, cy + 50 * s, 5.5 * s, [1.0, 0.9, 0.3]],
+    [cx, cy - 130 * s, 6.0 * s, [1.0, 0.95, 0.4]],
+    [cx - 120 * s, cy + 10 * s, 4.0 * s, [0.0, 1.0, 0.8]],
+    [cx + 120 * s, cy + 8 * s, 4.0 * s, [0.0, 1.0, 0.8]]
   ];
 
   for (const sp of sparks) {
-    canvas.drawRadialGlow(sp[0], sp[1], sp[2] * 3.5, sp[3], 0.75, 1.6);
+    canvas.drawRadialGlow(sp[0], sp[1], sp[2] * 4, sp[3], 0.8, 1.6);
     canvas.drawCircle(sp[0], sp[1], sp[2], [sp[3][0], sp[3][1], sp[3][2], 1.0]);
     canvas.drawCircle(sp[0], sp[1], sp[2] * 0.45, [1.0, 1.0, 1.0, 1.0]);
   }
 
-  // 8. LOWER BRAND BADGE PLATE (Sleek tech capsule)
+  // 8. LOWER BRAND BADGE PLATE (Modern Capsule)
   const plateX0 = 136 * s;
   const plateX1 = 376 * s;
-  const plateY0 = 422 * s;
-  const plateY1 = 448 * s;
-  const plateR = 13 * s;
+  const plateY = 432 * s;
+  const plateR = 14 * s;
 
-  // Dark capsule fill with cyan glow border
-  canvas.drawLine(plateX0 + plateR, 435 * s, plateX1 - plateR, 435 * s, 26 * s, [0.02, 0.10, 0.22, 0.95]);
-  canvas.drawCircle(plateX0 + plateR, 435 * s, plateR, [0.02, 0.10, 0.22, 0.95]);
-  canvas.drawCircle(plateX1 - plateR, 435 * s, plateR, [0.02, 0.10, 0.22, 0.95]);
+  canvas.drawLine(plateX0 + plateR, plateY, plateX1 - plateR, plateY, plateR * 2, [0.02, 0.10, 0.22, 0.95]);
+  canvas.drawCircle(plateX0 + plateR, plateY, plateR, [0.02, 0.10, 0.22, 0.95]);
+  canvas.drawCircle(plateX1 - plateR, plateY, plateR, [0.02, 0.10, 0.22, 0.95]);
 
-  // Plate borders
-  canvas.drawLine(plateX0 + plateR, plateY0, plateX1 - plateR, plateY0, 2.5 * s, neonCyan);
-  canvas.drawLine(plateX0 + plateR, plateY1, plateX1 - plateR, plateY1, 2.5 * s, neonCyan);
+  canvas.drawLine(plateX0 + plateR, plateY - plateR, plateX1 - plateR, plateY - plateR, 2.5 * s, neonCyan);
+  canvas.drawLine(plateX0 + plateR, plateY + plateR, plateX1 - plateR, plateY + plateR, 2.5 * s, neonCyan);
 
-  // Status lights on plate
-  canvas.drawCircle(256 * s, 435 * s, 5.5 * s, [0.0, 1.0, 0.8, 1.0]);
-  canvas.drawCircle(256 * s, 435 * s, 2.5 * s, [1.0, 1.0, 1.0, 1.0]);
-  canvas.drawCircle(210 * s, 435 * s, 3.5 * s, neonGold);
-  canvas.drawCircle(302 * s, 435 * s, 3.5 * s, neonGold);
+  // Status Indicator Nodes
+  canvas.drawCircle(cx, plateY, 5.5 * s, [0.0, 1.0, 0.8, 1.0]);
+  canvas.drawCircle(cx, plateY, 2.5 * s, [1.0, 1.0, 1.0, 1.0]);
+  canvas.drawCircle(cx - 46 * s, plateY, 3.5 * s, neonGold);
+  canvas.drawCircle(cx + 46 * s, plateY, 3.5 * s, neonGold);
 
   return encodePNG(size, size, canvas.buf);
 }
 
-// Generate the Vector SVG equivalent for Godot vector scaling
+// Generate Vector SVG
 function generateVectorSVG() {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Gradient -->
-    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%" fx="50%" fy="45%">
-      <stop offset="0%" stop-color="#082a55"/>
-      <stop offset="60%" stop-color="#04142d"/>
-      <stop offset="100%" stop-color="#020914"/>
+    <radialGradient id="bgGrad" cx="50%" cy="48%" r="70%">
+      <stop offset="0%" stop-color="#0a2d5e"/>
+      <stop offset="60%" stop-color="#041530"/>
+      <stop offset="100%" stop-color="#020813"/>
     </radialGradient>
-
-    <!-- Neon Cyan Glow -->
-    <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur stdDeviation="8" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
@@ -464,183 +435,143 @@ function generateVectorSVG() {
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-
-    <!-- High Intensity Bolt Glow -->
     <filter id="boltGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="outerBlur"/>
-      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="innerBlur"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b2"/>
       <feMerge>
-        <feMergeNode in="outerBlur"/>
-        <feMergeNode in="innerBlur"/>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-
-    <!-- Bolt Gradient -->
     <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="35%" stop-color="#fff176"/>
+      <stop offset="35%" stop-color="#fff59d"/>
       <stop offset="100%" stop-color="#ff9800"/>
     </linearGradient>
-
-    <!-- Brass Gradient -->
     <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#8d6e18"/>
       <stop offset="35%" stop-color="#ffd54f"/>
       <stop offset="70%" stop-color="#fff59d"/>
       <stop offset="100%" stop-color="#6d5410"/>
     </linearGradient>
-
-    <!-- Core Bloom -->
-    <radialGradient id="coreBloom" cx="50%" cy="42%" r="50%">
+    <radialGradient id="bulbBloom" cx="50%" cy="46%" r="50%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="30%" stop-color="#ffd700" stop-opacity="0.75"/>
-      <stop offset="65%" stop-color="#00e5ff" stop-opacity="0.35"/>
+      <stop offset="25%" stop-color="#ffd700" stop-opacity="0.75"/>
+      <stop offset="60%" stop-color="#00e5ff" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"/>
     </radialGradient>
   </defs>
 
-  <!-- Background -->
   <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+  <rect x="14" y="14" width="484" height="484" rx="86" fill="none" stroke="#00b0ff" stroke-width="2" opacity="0.45"/>
 
-  <!-- Subtle Cyber Grid -->
-  <g stroke="#0091ea" stroke-width="1.2" opacity="0.14">
-    <line x1="64" y1="0" x2="64" y2="512"/>
-    <line x1="128" y1="0" x2="128" y2="512"/>
-    <line x1="192" y1="0" x2="192" y2="512"/>
-    <line x1="256" y1="0" x2="256" y2="512"/>
-    <line x1="320" y1="0" x2="320" y2="512"/>
-    <line x1="384" y1="0" x2="384" y2="512"/>
+  <!-- Grid -->
+  <g stroke="#00b0ff" stroke-width="1.2" opacity="0.10">
+    <line x1="64" y1="0" x2="64" y2="512"/><line x1="128" y1="0" x2="128" y2="512"/>
+    <line x1="192" y1="0" x2="192" y2="512"/><line x1="256" y1="0" x2="256" y2="512"/>
+    <line x1="320" y1="0" x2="320" y2="512"/><line x1="384" y1="0" x2="384" y2="512"/>
     <line x1="448" y1="0" x2="448" y2="512"/>
-    <line x1="0" y1="64" x2="512" y2="64"/>
-    <line x1="0" y1="128" x2="512" y2="128"/>
-    <line x1="0" y1="192" x2="512" y2="192"/>
-    <line x1="0" y1="256" x2="512" y2="256"/>
-    <line x1="0" y1="320" x2="512" y2="320"/>
-    <line x1="0" y1="384" x2="512" y2="384"/>
+    <line x1="0" y1="64" x2="512" y2="64"/><line x1="0" y1="128" x2="512" y2="128"/>
+    <line x1="0" y1="192" x2="512" y2="192"/><line x1="0" y1="256" x2="512" y2="256"/>
+    <line x1="0" y1="320" x2="512" y2="320"/><line x1="0" y1="384" x2="512" y2="384"/>
     <line x1="0" y1="448" x2="512" y2="448"/>
   </g>
 
-  <!-- Ambient Light Bloom -->
-  <circle cx="256" cy="215" r="195" fill="url(#coreBloom)"/>
-
-  <!-- Circuit Routes Left -->
-  <g stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#cyanGlow)">
-    <polyline points="45,145 125,145 175,195" fill="none"/>
-    <polyline points="45,256 145,256" fill="none"/>
-    <polyline points="45,365 125,365 175,315" fill="none"/>
-  </g>
-  <!-- Circuit Routes Right -->
-  <g stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#cyanGlow)">
-    <polyline points="467,145 387,145 337,195" fill="none"/>
-    <polyline points="467,256 367,256" fill="none"/>
-    <polyline points="467,365 387,365 337,315" fill="none"/>
-  </g>
-  <!-- Vertical Feeders -->
-  <g stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round" filter="url(#cyanGlow)">
-    <line x1="256" y1="45" x2="256" y2="110"/>
-    <line x1="256" y1="467" x2="256" y2="400"/>
+  <!-- Traces -->
+  <g stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#neonGlow)">
+    <line x1="256" y1="35" x2="256" y2="110"/>
+    <line x1="256" y1="475" x2="256" y2="400"/>
+    <polyline points="35,145 120,145 165,190" fill="none"/>
+    <polyline points="35,250 140,250" fill="none"/>
+    <polyline points="35,355 120,355 165,310" fill="none"/>
+    <polyline points="477,145 392,145 347,190" fill="none"/>
+    <polyline points="477,250 372,250" fill="none"/>
+    <polyline points="477,355 392,355 347,310" fill="none"/>
   </g>
 
-  <!-- Gold Terminal Nodes -->
-  <g filter="url(#cyanGlow)">
-    <circle cx="45" cy="145" r="6" fill="#ffd700"/>
-    <circle cx="45" cy="256" r="6" fill="#ffd700"/>
-    <circle cx="45" cy="365" r="6" fill="#ffd700"/>
-    <circle cx="467" cy="145" r="6" fill="#ffd700"/>
-    <circle cx="467" cy="256" r="6" fill="#ffd700"/>
-    <circle cx="467" cy="365" r="6" fill="#ffd700"/>
-    <circle cx="256" cy="45" r="6" fill="#ffd700"/>
-    <circle cx="256" cy="467" r="6" fill="#ffd700"/>
+  <!-- Terminals -->
+  <g filter="url(#neonGlow)">
+    <circle cx="256" cy="35" r="6.5" fill="#ffd700"/>
+    <circle cx="256" cy="475" r="6.5" fill="#ffd700"/>
+    <circle cx="35" cy="145" r="6.5" fill="#ffd700"/>
+    <circle cx="35" cy="250" r="6.5" fill="#ffd700"/>
+    <circle cx="35" cy="355" r="6.5" fill="#ffd700"/>
+    <circle cx="477" cy="145" r="6.5" fill="#ffd700"/>
+    <circle cx="477" cy="250" r="6.5" fill="#ffd700"/>
+    <circle cx="477" cy="355" r="6.5" fill="#ffd700"/>
   </g>
 
-  <!-- Glass Bulb Outer Envelope -->
-  <path d="M 256,120
-           C 195,120 161,162 161,215
-           C 161,255 182,279 204,308
-           L 204,328
-           L 308,328
-           L 308,308
-           C 330,279 351,255 351,215
-           C 351,162 317,120 256,120 Z"
-        fill="#041a36" fill-opacity="0.45"
-        stroke="#40c4ff" stroke-width="5" filter="url(#cyanGlow)"/>
+  <!-- Bulb Ambient Bloom -->
+  <circle cx="256" cy="230" r="210" fill="url(#bulbBloom)"/>
+
+  <!-- Bulb Glass Envelope -->
+  <path d="M 256,126
+           C 192,126 152,172 152,230
+           C 152,274 174,300 204,334
+           L 204,350
+           L 308,350
+           L 308,334
+           C 338,300 360,274 360,230
+           C 360,172 320,126 256,126 Z"
+        fill="#041a38" fill-opacity="0.45"
+        stroke="#40c4ff" stroke-width="5" filter="url(#neonGlow)"/>
 
   <!-- Specular Reflection -->
-  <path d="M 188,162 A 80 80 0 0 1 242,130"
+  <path d="M 178,172 A 86 86 0 0 1 238,136"
         fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
 
   <!-- Brass Screw Base -->
-  <rect x="204" y="328" width="104" height="14" rx="7" fill="url(#brassGrad)"/>
-  <rect x="208" y="342" width="96" height="13" rx="6.5" fill="url(#brassGrad)"/>
-  <rect x="214" y="356" width="84" height="13" rx="6.5" fill="url(#brassGrad)"/>
-  <ellipse cx="256" cy="374" rx="18" ry="6" fill="#1c1c1c"/>
-  <ellipse cx="256" cy="376" rx="10" ry="4" fill="#cfd8dc" filter="url(#cyanGlow)"/>
+  <rect x="202" y="350" width="108" height="14" rx="7" fill="url(#brassGrad)"/>
+  <rect x="206" y="364" width="100" height="14" rx="7" fill="url(#brassGrad)"/>
+  <rect x="212" y="378" width="88" height="14" rx="7" fill="url(#brassGrad)"/>
+  <ellipse cx="256" cy="398" rx="18" ry="6" fill="#1c1c1c"/>
+  <ellipse cx="256" cy="400" rx="10" ry="4" fill="#cfd8dc" filter="url(#neonGlow)"/>
 
-  <!-- High-Voltage Lightning Bolt Core -->
-  <polygon points="268,140 206,218 250,222 212,298 306,210 260,206 288,140"
+  <!-- Lightning Bolt -->
+  <polygon points="270,150 201,236 249,240 206,324 310,226 260,222 292,150"
            fill="url(#boltGrad)" stroke="#ffffff" stroke-width="3" filter="url(#boltGlow)"/>
 
-  <!-- Electric Energy Sparks -->
-  <g fill="#ffffff" filter="url(#cyanGlow)">
-    <circle cx="175" cy="180" r="5"/>
-    <circle cx="336" cy="185" r="4.5"/>
-    <circle cx="185" cy="268" r="4"/>
-    <circle cx="328" cy="262" r="5.5"/>
-    <polygon points="256,92 258,98 264,100 258,102 256,108 254,102 248,100 254,98" fill="#ffd700"/>
-    <polygon points="135,225 137,229 141,230 137,231 135,235 133,231 129,230 133,229" fill="#00e5ff"/>
-    <polygon points="376,220 378,224 382,225 378,226 376,230 374,226 370,225 374,224" fill="#00e5ff"/>
+  <!-- Sparks -->
+  <g fill="#ffffff" filter="url(#neonGlow)">
+    <circle cx="171" cy="195" r="5"/>
+    <circle cx="341" cy="200" r="4.5"/>
+    <circle cx="181" cy="285" r="4"/>
+    <circle cx="331" cy="280" r="5.5"/>
+    <circle cx="256" cy="100" r="6"/>
   </g>
 
-  <!-- Bottom Tech Plate -->
-  <rect x="136" y="422" width="240" height="26" rx="13" fill="#041429" stroke="#00e5ff" stroke-width="2" filter="url(#cyanGlow)"/>
-  <circle cx="256" cy="435" r="5" fill="#00ffcc" filter="url(#cyanGlow)"/>
-  <circle cx="210" cy="435" r="3.5" fill="#ffd700"/>
-  <circle cx="302" cy="435" r="3.5" fill="#ffd700"/>
+  <!-- Lower Tech Plate -->
+  <rect x="136" y="418" width="240" height="28" rx="14" fill="#041429" stroke="#00e5ff" stroke-width="2" filter="url(#neonGlow)"/>
+  <circle cx="256" cy="432" r="5.5" fill="#00ffcc" filter="url(#neonGlow)"/>
+  <circle cx="210" cy="432" r="3.5" fill="#ffd700"/>
+  <circle cx="302" cy="432" r="3.5" fill="#ffd700"/>
 </svg>`;
 }
 
-// Generate all target files
-console.log('Rendering high-fidelity Electric Flow game icons...');
+// Generate all target icon files
+console.log('Rendering new Electric Flow master icons...');
 
-// 1. Master Google Play / App Store 512x512
-const icon512 = generateElectricFlowIcon(512, false);
+const icon512 = renderElectricFlowIcon(512, false);
 fs.writeFileSync('assets/generated/app-icon.png', icon512);
 fs.writeFileSync('assets/generated/app-icon-safe.png', icon512);
-console.log('✓ Generated assets/generated/app-icon.png (512x512)');
+console.log('✓ Saved assets/generated/app-icon.png (512x512)');
 
-// 2. High-res Google Play Store Listing 1024x1024
-const icon1024 = generateElectricFlowIcon(1024, false);
+const icon1024 = renderElectricFlowIcon(1024, false);
 fs.writeFileSync('assets/generated/app-icon-1024.png', icon1024);
-console.log('✓ Generated assets/generated/app-icon-1024.png (1024x1024)');
+console.log('✓ Saved assets/generated/app-icon-1024.png (1024x1024)');
 
-// 3. Adaptive Foreground 432x432 (Android Adaptive Icon standard)
-const fg432 = generateElectricFlowIcon(432, true);
+const fg432 = renderElectricFlowIcon(432, true);
 fs.writeFileSync('assets/generated/app-icon-foreground.png', fg432);
-console.log('✓ Generated assets/generated/app-icon-foreground.png (432x432)');
+console.log('✓ Saved assets/generated/app-icon-foreground.png (432x432)');
 
-// 4. Vector SVGs
 const svg = generateVectorSVG();
 fs.writeFileSync('assets/generated/app-icon.svg', svg);
 fs.writeFileSync('assets/generated/app-icon-background.svg', svg);
 fs.writeFileSync('icon.svg', svg);
-console.log('✓ Generated assets/generated/app-icon.svg & icon.svg');
+console.log('✓ Saved assets/generated/app-icon.svg & icon.svg');
 
-// 5. Android Mipmaps
-const mipmaps = [
-  { dir: 'android/build/res/mipmap-mdpi-v4', size: 48 },
-  { dir: 'android/build/res/mipmap-hdpi-v4', size: 72 },
-  { dir: 'android/build/res/mipmap-xhdpi-v4', size: 96 },
-  { dir: 'android/build/res/mipmap-xxhdpi-v4', size: 144 },
-  { dir: 'android/build/res/mipmap-xxxhdpi-v4', size: 192 }
-];
-
-for (const mm of mipmaps) {
-  if (fs.existsSync(mm.dir)) {
-    const png = generateElectricFlowIcon(mm.size, false);
-    fs.writeFileSync(path.join(mm.dir, 'icon.png'), png);
-    console.log(`✓ Generated ${mm.dir}/icon.png (${mm.size}x${mm.size})`);
-  }
-}
-
-console.log('>>> ALL APP ICONS GENERATED WITH PROFESSIONAL LOOK & FEEL! <<<');
+// Godot's Android exporter automatically generates mipmap icon.webp from
+// assets/generated/app-icon-safe.png configured in export_presets.cfg.
+// We intentionally do not place icon.png in android/build/res/mipmap to prevent AAPT2 duplicate resource errors.
+console.log('>>> NEW MASTER ICON GENERATION COMPLETE! <<<');
