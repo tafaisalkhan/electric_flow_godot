@@ -1,0 +1,501 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_screens/home_screen.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/circuit_logo.gd" id="circuit_logo_script"]
+[ext_resource type="Script" path="res://scripts/electric_background.gd" id="electric_bg"]
+[ext_resource type="Theme" path="res://resources/ui_suite_theme.tres" id="theme"]
+[ext_resource type="StyleBox" path="res://resources/ui_white_card.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="red"]
+[ext_resource type="StyleBox" path="res://resources/ui_blue_button.tres" id="blue"]
+[ext_resource type="StyleBox" path="res://resources/ui_light_button.tres" id="light"]
+[ext_resource type="Material" path="res://resources/ui_home_sky_material.tres" id="sky_material"]
+[ext_resource type="FontVariation" path="res://resources/ui_heading_font.tres" id="heading_font"]
+[ext_resource type="StyleBox" path="res://resources/ui_score_card.tres" id="score_card"]
+[ext_resource type="StyleBox" path="res://resources/ui_ball.tres" id="ball"]
+[ext_resource type="StyleBox" path="res://resources/ui_ball_glint.tres" id="ball_glint"]
+[ext_resource type="StyleBox" path="res://resources/ui_daily_reward_button.tres" id="daily_reward_button"]
+[ext_resource type="StyleBox" path="res://resources/ui_daily_reward_button_disabled.tres" id="daily_reward_button_disabled"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark_card"]
+bg_color = Color(0.035, 0.09, 0.18, 0.94)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0.85, 1, 0.85)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 20
+shadow_offset = Vector2(0, 8)
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark_pill"]
+bg_color = Color(0.06, 0.16, 0.28, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.82, 0.2, 0.85)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings_circle"]
+bg_color = Color(0.12, 0.2, 0.35, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.55, 0.85, 0.9)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_daily_reward"]
+bg_color = Color(0.045, 0.12, 0.24, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.75, 0.95, 0.75)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_daily_reward_disabled"]
+bg_color = Color(0.03, 0.07, 0.14, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15, 0.3, 0.45, 0.5)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_btn"]
+bg_color = Color(0, 0.82, 0.48, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.6, 1, 0.75, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0, 0.4, 0.2, 0.5)
+shadow_size = 12
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_daily_btn"]
+bg_color = Color(0.12, 0.38, 0.72, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.35, 0.75, 1, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.04, 0.15, 0.35, 0.45)
+shadow_size = 8
+shadow_offset = Vector2(0, 3)
+
+[node name="HomeUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="Background" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("electric_bg")
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Scroll/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 13
+
+[node name="TopBar" type="HBoxContainer" parent="Scroll/Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SettingsButton" type="Button" parent="Scroll/Margin/Layout/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_settings_circle")
+theme_override_styles/hover = SubResource("StyleBoxFlat_settings_circle")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_settings_circle")
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 27
+text = "⚙"
+
+[node name="Spacer" type="Control" parent="Scroll/Margin/Layout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StarLabel" type="Label" parent="Scroll/Margin/Layout/TopBar"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_dark_pill")
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "★  0"
+
+[node name="CoinLabel" type="Label" parent="Scroll/Margin/Layout/TopBar"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_dark_pill")
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "●  0"
+
+[node name="HeroSpacer" type="Control" parent="Scroll/Margin/Layout"]
+custom_minimum_size = Vector2(0, 67)
+layout_mode = 2
+
+[node name="LogoGroup" type="CenterContainer" parent="Scroll/Margin/Layout"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+
+[node name="CircuitLogo" type="Control" parent="Scroll/Margin/Layout/LogoGroup"]
+custom_minimum_size = Vector2(230, 180)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("circuit_logo_script")
+
+[node name="TitleLabel" type="Label" parent="Scroll/Margin/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("heading_font")
+theme_override_colors/font_color = Color(0, 0.92, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.25, 0.55, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 4
+theme_override_colors/font_outline_color = Color(0.02, 0.15, 0.35, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 52
+text = "ELECTRIC FLOW"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TaglineLabel" type="Label" parent="Scroll/Margin/Layout"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.82, 0.45, 1)
+theme_override_colors/font_shadow_color = Color(0.01, 0.04, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
+text = "CONNECT THE CIRCUITS"
+horizontal_alignment = 1
+
+[node name="ScoreBox" type="Control" parent="Scroll/Margin/Layout"]
+visible = false
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="ScoreCard" type="PanelContainer" parent="Scroll/Margin/Layout/ScoreBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_styles/panel = ExtResource("score_card")
+
+[node name="ScoreContent" type="VBoxContainer" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="ScoreCaption" type="Label" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard/ScoreContent"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.56, 0.64, 1)
+text = "BEST SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreNumber" type="HBoxContainer" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard/ScoreContent"]
+layout_mode = 2
+size_flags_horizontal = 4
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="ScoreLabel" type="Label" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard/ScoreContent/ScoreNumber"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("heading_font")
+theme_override_colors/font_color = Color(0.1, 0.18, 0.28, 1)
+theme_override_font_sizes/font_size = 54
+text = "0"
+horizontal_alignment = 1
+
+[node name="ScoreUnit" type="Label" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard/ScoreContent/ScoreNumber"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.17, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "m"
+vertical_alignment = 2
+
+[node name="ScoreLink" type="Button" parent="Scroll/Margin/Layout/ScoreBox/ScoreCard/ScoreContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("clear")
+theme_override_colors/font_color = Color(0.18, 0.53, 0.79, 1)
+theme_override_font_sizes/font_size = 18
+text = "View leaderboard ›"
+
+[node name="DailyRewardCard" type="Control" parent="Scroll/Margin/Layout"]
+custom_minimum_size = Vector2(340, 78)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="DailyRewardButton" type="Button" parent="Scroll/Margin/Layout/DailyRewardCard"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_daily_reward")
+theme_override_styles/hover = SubResource("StyleBoxFlat_daily_reward")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_daily_reward")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_daily_reward_disabled")
+tooltip_text = "Claim today's daily reward"
+
+[node name="RewardPadding" type="MarginContainer" parent="Scroll/Margin/Layout/DailyRewardCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 8
+
+[node name="RewardContent" type="HBoxContainer" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="RewardIcon" type="Label" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding/RewardContent"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 27
+text = "🎁"
+vertical_alignment = 1
+
+[node name="RewardCopy" type="VBoxContainer" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding/RewardContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 0
+
+[node name="RewardTitle" type="Label" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding/RewardContent/RewardCopy"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_fonts/font = ExtResource("bold_font")
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "Daily Reward Ready"
+
+[node name="RewardSubtitle" type="Label" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding/RewardContent/RewardCopy"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.88, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "Claim 10 coins now"
+
+[node name="RewardArrow" type="Label" parent="Scroll/Margin/Layout/DailyRewardCard/RewardPadding/RewardContent"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_fonts/font = ExtResource("bold_font")
+theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "›"
+vertical_alignment = 1
+
+[node name="ActionSpacer" type="Control" parent="Scroll/Margin/Layout"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="ActionBox" type="Control" parent="Scroll/Margin/Layout"]
+custom_minimum_size = Vector2(0, 204)
+layout_mode = 2
+
+[node name="ActionPanel" type="PanelContainer" parent="Scroll/Margin/Layout/ActionBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dark_card")
+
+[node name="Actions" type="VBoxContainer" parent="Scroll/Margin/Layout/ActionBox/ActionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PlayButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("heading_font")
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_play_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_play_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_play_btn")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 42
+text = "PLAY"
+
+[node name="DailyChallengeButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_daily_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_daily_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_daily_btn")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "DAILY CHALLENGE"
+
+[node name="RewardedButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("blue")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "▶  Watch Ad  •  Get 100 Coins"
+
+[node name="Nav" type="HBoxContainer" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ShopButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions/Nav"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("light")
+theme_override_colors/font_color = Color(0.1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "◇\nShop"
+
+[node name="StoreButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions/Nav"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("light")
+theme_override_colors/font_color = Color(0.1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "●\nStore"
+
+[node name="MissionsButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions/Nav"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("light")
+theme_override_colors/font_color = Color(0.1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "◎\nMissions"
+
+[node name="ScoreButton" type="Button" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions/Nav"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("light")
+theme_override_colors/font_color = Color(0.1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "▥\nScore"
+
+[node name="FooterSpacer" type="Control" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+visible = false
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="MessageLabel" type="Label" parent="Scroll/Margin/Layout/ActionBox/ActionPanel/Actions"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 15
+text = "Complete missions to earn coins"
+horizontal_alignment = 1
+autowrap_mode = 3
+

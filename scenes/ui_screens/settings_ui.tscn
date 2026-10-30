@@ -1,0 +1,167 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_screens/panel_screen.gd" id="script"]
+[ext_resource type="Theme" path="res://resources/ui_suite_theme.tres" id="theme"]
+[ext_resource type="StyleBox" path="res://resources/ui_dialog_card.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="red"]
+[ext_resource type="StyleBox" path="res://resources/ui_light_button.tres" id="light"]
+[ext_resource type="PackedScene" path="res://scenes/ui_items/setting_item_ui.tscn" id="item"]
+[ext_resource type="Material" path="res://resources/ui_sky_material.tres" id="sky_material"]
+[ext_resource type="FontVariation" path="res://resources/ui_heading_font.tres" id="heading_font"]
+
+[node name="SettingsUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("theme")
+script = ExtResource("script")
+screen_kind = "settings"
+item_scene = ExtResource("item")
+
+[node name="Background" type="ColorRect" parent="."]
+material = ExtResource("sky_material")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.48, 0.78, 0.94, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="FrameBox" type="Control" parent="Center"]
+custom_minimum_size = Vector2(490, 530)
+layout_mode = 2
+
+[node name="Panel" type="PanelContainer" parent="Center/FrameBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_styles/panel = ExtResource("card")
+
+[node name="Layout" type="VBoxContainer" parent="Center/FrameBox/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Eyebrow" type="Label" parent="Center/FrameBox/Panel/Layout"]
+theme_override_fonts/font = ExtResource("bold_font")
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.45, 0.69, 1)
+theme_override_font_sizes/font_size = 16
+text = "GAME OPTIONS"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Center/FrameBox/Panel/Layout"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("heading_font")
+theme_override_colors/font_color = Color(0.08, 0.19, 0.3, 1)
+theme_override_font_sizes/font_size = 40
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/FrameBox/Panel/Layout"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46, 0.53, 0.61, 1)
+text = "Choose how you play"
+horizontal_alignment = 1
+autowrap_mode = 0
+
+[node name="BalanceLabel" type="Label" parent="Center/FrameBox/Panel/Layout"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.29, 0.18, 1)
+theme_override_font_sizes/font_size = 23
+text = "●  0"
+horizontal_alignment = 1
+
+[node name="Tabs" type="HBoxContainer" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Tab1" type="Button" parent="Center/FrameBox/Panel/Layout/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_styles/normal = ExtResource("light")
+text = "BALLS"
+
+[node name="Tab2" type="Button" parent="Center/FrameBox/Panel/Layout/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_styles/normal = ExtResource("light")
+text = "THEMES"
+
+[node name="Tab3" type="Button" parent="Center/FrameBox/Panel/Layout/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_styles/normal = ExtResource("light")
+text = "BOOSTS"
+
+[node name="Scroll" type="ScrollContainer" parent="Center/FrameBox/Panel/Layout"]
+custom_minimum_size = Vector2(0, 238)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Items" type="GridContainer" parent="Center/FrameBox/Panel/Layout/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 1
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="SignInBox" type="VBoxContainer" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SignInPrompt" type="Label" parent="Center/FrameBox/Panel/Layout/SignInBox"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+text = "Sign in to see rankings and compete for rewards."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SignInButton" type="Button" parent="Center/FrameBox/Panel/Layout/SignInBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("red")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Sign in"
+
+[node name="AboutButton" type="Button" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/normal = ExtResource("light")
+text = "About & Privacy"
+
+[node name="BackButton" type="Button" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+size_flags_horizontal = 4
+theme_override_styles/normal = ExtResource("light")
+text = "Back"
+

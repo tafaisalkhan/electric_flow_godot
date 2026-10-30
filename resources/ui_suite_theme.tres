@@ -1,0 +1,15 @@
+[gd_resource type="Theme" load_steps=3 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_body_font.tres" id="body"]
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold"]
+
+[resource]
+default_font = ExtResource("body")
+default_font_size = 18
+Label/colors/font_color = Color(0.1, 0.18, 0.28, 1)
+Button/fonts/font = ExtResource("bold")
+Button/colors/font_color = Color(0.1, 0.18, 0.28, 1)
+Button/colors/font_hover_color = Color(0.08, 0.16, 0.26, 1)
+Button/colors/font_pressed_color = Color(0.08, 0.16, 0.26, 1)
+Button/colors/font_disabled_color = Color(0.42, 0.48, 0.54, 1)
+

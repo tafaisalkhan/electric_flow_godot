@@ -1,0 +1,21 @@
+# Excluded per user request
+assets/
+**/assets/
+*.keystore
+*.jks
+*.json
+
+# Godot temporary and cache files
+.godot/
+*.import
+.preview-*
+
+# Build outputs
+build/
+android/build/build/
+android/build/.gradle/
+android/build/libs/
+android/build/assetPackInstallTime/
+*.aar
+export_log.txt
+scratch/

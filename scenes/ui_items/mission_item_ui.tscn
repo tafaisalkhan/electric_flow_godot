@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_items/mission_item.gd" id="script"]
+[ext_resource type="StyleBox" path="res://resources/ui_white_card.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="button"]
+[ext_resource type="StyleBox" path="res://resources/ui_mission_ready.tres" id="ready_style"]
+[ext_resource type="StyleBox" path="res://resources/ui_progress_bg.tres" id="progress_bg"]
+[ext_resource type="StyleBox" path="res://resources/ui_progress_fill.tres" id="progress_fill"]
+
+[node name="MissionItem" type="Control"]
+custom_minimum_size = Vector2(420, 112)
+script = ExtResource("script")
+ready_style = ExtResource("ready_style")
+normal_style = ExtResource("card")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("card")
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Row" type="HBoxContainer" parent="Panel/Layout"]
+layout_mode = 2
+
+[node name="Text" type="VBoxContainer" parent="Panel/Layout/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Panel/Layout/Row/Text"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Mission"
+
+[node name="DetailLabel" type="Label" parent="Panel/Layout/Row/Text"]
+theme_override_font_sizes/font_size = 16
+unique_name_in_owner = true
+layout_mode = 2
+text = "0/1"
+
+[node name="ActionButton" type="Button" parent="Panel/Layout/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 48)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("button")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "+18"
+
+[node name="Progress" type="ProgressBar" parent="Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+show_percentage = false
+theme_override_styles/background = ExtResource("progress_bg")
+theme_override_styles/fill = ExtResource("progress_fill")
+

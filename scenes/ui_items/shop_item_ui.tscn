@@ -1,0 +1,73 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_items/shop_item.gd" id="script"]
+[ext_resource type="StyleBox" path="res://resources/ui_white_card.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="button"]
+[ext_resource type="StyleBox" path="res://resources/ui_shop_ball.tres" id="ball"]
+[ext_resource type="StyleBox" path="res://resources/ui_ball_glint.tres" id="glint"]
+
+[node name="ShopItem" type="Control"]
+custom_minimum_size = Vector2(122, 150)
+script = ExtResource("script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("card")
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="IconArea" type="CenterContainer" parent="Panel/Layout"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+
+[node name="IconBall" type="Panel" parent="Panel/Layout/IconArea"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("ball")
+
+[node name="Glint" type="Panel" parent="Panel/Layout/IconArea/IconBall"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 9.0
+offset_right = 23.0
+offset_bottom = 21.0
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("glint")
+
+[node name="IconLabel" type="Label" parent="Panel/Layout/IconArea"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "◆"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="Panel/Layout"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "ITEM"
+horizontal_alignment = 1
+
+[node name="ActionButton" type="Button" parent="Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("button")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Select"
+

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://electrictile001"]
+
+[ext_resource type="Script" path="res://scripts/electric_tile.gd" id="1_tile"]
+
+[node name="ElectricTile" type="Control"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 100.0
+script = ExtResource("1_tile")

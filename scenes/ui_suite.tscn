@@ -1,0 +1,26 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui_suite.gd" id="script"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/home_ui.tscn" id="home_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/settings_ui.tscn" id="settings_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/shop_ui.tscn" id="shop_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/store_ui.tscn" id="store_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/missions_ui.tscn" id="missions_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/leaderboard_ui.tscn" id="leaderboard_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui_screens/reward_ui.tscn" id="reward_ui"]
+
+[node name="UISuite" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("script")
+home_ui_scene = ExtResource("home_ui")
+settings_ui_scene = ExtResource("settings_ui")
+shop_ui_scene = ExtResource("shop_ui")
+store_ui_scene = ExtResource("store_ui")
+missions_ui_scene = ExtResource("missions_ui")
+leaderboard_ui_scene = ExtResource("leaderboard_ui")
+reward_ui_scene = ExtResource("reward_ui")

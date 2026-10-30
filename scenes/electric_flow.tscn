@@ -1,0 +1,928 @@
+[gd_scene load_steps=19 format=3 uid="uid://electricflow001"]
+
+[ext_resource type="Script" path="res://scripts/electric_flow.gd" id="1_flow"]
+[ext_resource type="FontFile" path="res://assets/fonts/LuckiestGuy-Regular.ttf" id="2_font"]
+[ext_resource type="Script" path="res://scripts/confetti_cannons.gd" id="3_confetti"]
+[ext_resource type="Script" path="res://scripts/electric_landmark.gd" id="4_landmark"]
+[ext_resource type="Script" path="res://scripts/electric_background.gd" id="5_bg"]
+[ext_resource type="Script" path="res://scripts/electric_board_tray.gd" id="6_tray"]
+[ext_resource type="Script" path="res://scripts/electric_shine_rays.gd" id="7_shine"]
+[ext_resource type="Texture2D" path="res://assets/generated/victory-star.png" id="8_star"]
+[ext_resource type="Texture2D" path="res://assets/generated/reward-coin.png" id="9_coin"]
+[ext_resource type="FontFile" path="res://assets/fonts/Fredoka-Variable.ttf" id="10_font_sub"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.05, 0.08, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_circle"]
+bg_color = Color(0.12, 0.2, 0.35, 0.8)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.4, 0.65, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.96, 0.98, 1, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_next"]
+bg_color = Color(0, 0.82, 0.45, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.65, 1, 0.75, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0.4, 0.2, 0.45)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.035, 0.09, 0.18, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0.85, 1, 0.9)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 24
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+bg_color = Color(0.06, 0.16, 0.28, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.82, 0.2, 0.85)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_replay"]
+bg_color = Color(0.12, 0.22, 0.38, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.58, 0.85, 0.85)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 8
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fact"]
+bg_color = Color(0.045, 0.11, 0.22, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.82, 0.25, 0.75)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_codex"]
+bg_color = Color(0.03, 0.08, 0.17, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0.85, 1, 0.95)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 24
+shadow_offset = Vector2(0, 8)
+
+[node name="ElectricFlow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_flow")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("5_bg")
+
+[node name="Header" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 70.0
+grow_horizontal = 2
+
+[node name="TopRow" type="HBoxContainer" parent="Header"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 14.0
+offset_right = -16.0
+offset_bottom = 62.0
+grow_horizontal = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BackButton" type="Button" parent="Header/TopRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_circle")
+text = "<"
+
+[node name="LevelLabel" type="Button" parent="Header/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(160, 48)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.12, 0.25, 0.95)
+theme_override_constants/outline_size = 6
+theme_override_styles/normal = SubResource("StyleBoxFlat_pill")
+text = "Level 1"
+
+[node name="HeaderCoinsPill" type="PanelContainer" parent="Header/TopRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 46)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="HBox" type="HBoxContainer" parent="Header/TopRow/HeaderCoinsPill"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CoinIcon" type="TextureRect" parent="Header/TopRow/HeaderCoinsPill/HBox"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("9_coin")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="HeaderCoinsLabel" type="Label" parent="Header/TopRow/HeaderCoinsPill/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+text = "0"
+vertical_alignment = 1
+
+[node name="BoardCenter" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 74.0
+offset_bottom = -195.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BoardPanel" type="Control" parent="BoardCenter"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("6_tray")
+
+[node name="LandmarkCenter" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -190.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="LandmarkDisplay" type="Control" parent="LandmarkCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(490, 165)
+layout_mode = 2
+script = ExtResource("4_landmark")
+
+[node name="ConfettiCannons" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_confetti")
+
+[node name="VictoryLayer" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryBackdrop" type="ColorRect" parent="VictoryLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.04, 0.09, 0.72)
+
+[node name="ShineCenter" type="CenterContainer" parent="VictoryLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VictoryShineRays" type="Control" parent="VictoryLayer/ShineCenter"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("7_shine")
+
+[node name="VictoryModalCenter" type="CenterContainer" parent="VictoryLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryCard" type="PanelContainer" parent="VictoryLayer/VictoryModalCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 480)
+layout_mode = 2
+pivot_offset = Vector2(230, 240)
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Margin" type="MarginContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="VictoryBanner" type="PanelContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 52)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="BannerLabel" type="Label" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/VictoryBanner"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0, 0.82, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0, 0.35, 0.55, 1)
+theme_override_constants/outline_size = 6
+text = "AWESOME !"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarsBox" type="HBoxContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Star1" type="TextureRect" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/StarsBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+pivot_offset = Vector2(36, 36)
+texture = ExtResource("8_star")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Star2" type="TextureRect" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/StarsBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(86, 86)
+layout_mode = 2
+pivot_offset = Vector2(43, 43)
+texture = ExtResource("8_star")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Star3" type="TextureRect" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/StarsBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+pivot_offset = Vector2(36, 36)
+texture = ExtResource("8_star")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="VictorySummary" type="Label" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
+text = "Solved in 3 moves (Par: 3)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RewardPill" type="PanelContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="HBox" type="HBoxContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/RewardPill"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CoinIcon" type="TextureRect" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/RewardPill/HBox"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("9_coin")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="RewardCoinsLabel" type="Label" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/RewardPill/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+text = "+10 COINS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FactBox" type="PanelContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(390, 72)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fact")
+
+[node name="FactMargin" type="MarginContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/FactBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="FactVBox" type="VBoxContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/FactBox/FactMargin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="FactTitle" type="Label" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/FactBox/FactMargin/FactVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.84, 0.28, 1)
+text = "⚡ ELECTRONICS LAB FACT:"
+
+[node name="FactText" type="Label" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/FactBox/FactMargin/FactVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.85, 0.94, 1, 1)
+text = "Resistors limit electric current to protect delicate circuit parts..."
+autowrap_mode = 3
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="RestartVictoryButton" type="Button" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_replay")
+text = "↺ REPLAY"
+
+[node name="NextButton" type="Button" parent="VictoryLayer/VictoryModalCenter/VictoryCard/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+pivot_offset = Vector2(105, 24)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_next")
+text = "NEXT LEVEL ▶"
+
+[node name="CodexLayer" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CodexBackdrop" type="ColorRect" parent="CodexLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.012, 0.035, 0.08, 0.85)
+
+[node name="CodexCenter" type="CenterContainer" parent="CodexLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CodexCard" type="PanelContainer" parent="CodexLayer/CodexCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 560)
+layout_mode = 2
+pivot_offset = Vector2(240, 280)
+theme_override_styles/panel = SubResource("StyleBoxFlat_codex")
+
+[node name="Margin" type="MarginContainer" parent="CodexLayer/CodexCenter/CodexCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CodexHeader" type="HBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="CodexHeaderLabel" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/CodexHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0, 0.88, 1, 1)
+text = "⚡ ELECTRONICS HANDBOOK"
+
+[node name="CodexIndexLabel" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/CodexHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+text = "1 / 9"
+
+[node name="CodexName" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+text = "RESISTOR"
+
+[node name="CodexCategory" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+text = "—[ /\\/\\/\\ ]— • Current Control • Ohms (Ω)"
+
+[node name="PurposePanel" type="PanelContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fact")
+
+[node name="PInner" type="MarginContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/PurposePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="PVBox" type="VBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/PurposePanel/PInner"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PTitle" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/PurposePanel/PInner/PVBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+text = "📌 PURPOSE IN CIRCUIT:"
+
+[node name="CodexPurpose" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/PurposePanel/PInner/PVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+text = "Limits electric current to protect delicate circuit parts from burning out."
+autowrap_mode = 3
+
+[node name="SciencePanel" type="PanelContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fact")
+
+[node name="SInner" type="MarginContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/SciencePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="SVBox" type="VBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/SciencePanel/SInner"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="STitle" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/SciencePanel/SInner/SVBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.4, 0.9, 0.6, 1)
+text = "🔬 HOW IT WORKS (SCIENCE):"
+
+[node name="CodexScience" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/SciencePanel/SInner/SVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+text = "By Ohm's Law (V = I × R), it drops voltage and limits the amperage passing downstream."
+autowrap_mode = 3
+
+[node name="FactPanel" type="PanelContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fact")
+
+[node name="FInner" type="MarginContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/FactPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="FVBox" type="VBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/FactPanel/FInner"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="FTitle" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/FactPanel/FInner/FVBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.84, 0.28, 1)
+text = "💡 REAL-WORLD APPLICATION:"
+
+[node name="CodexFact" type="Label" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/FactPanel/FInner/FVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+text = "The 4 colored stripes on every resistor are a universal code indicating Ohms."
+autowrap_mode = 3
+
+[node name="CodexNav" type="HBoxContainer" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="CodexPrevBtn" type="Button" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/CodexNav"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 44)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_replay")
+text = "◀ PREV"
+
+[node name="CodexCloseBtn" type="Button" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/CodexNav"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 44)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_next")
+text = "GOT IT ✕"
+
+[node name="CodexNextBtn" type="Button" parent="CodexLayer/CodexCenter/CodexCard/Margin/VBox/CodexNav"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 44)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_replay")
+text = "NEXT ▶"
+
+[node name="ShopLayer" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShopBackdrop" type="ColorRect" parent="ShopLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.012, 0.035, 0.08, 0.85)
+
+[node name="ShopCenter" type="CenterContainer" parent="ShopLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShopCard" type="PanelContainer" parent="ShopLayer/ShopCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(490, 600)
+layout_mode = 2
+pivot_offset = Vector2(245, 300)
+theme_override_styles/panel = SubResource("StyleBoxFlat_codex")
+
+[node name="Margin" type="MarginContainer" parent="ShopLayer/ShopCenter/ShopCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ShopHeader" type="HBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="ShopTitle" type="Label" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0, 0.88, 1, 1)
+text = "🎨 ENERGY SKINS STORE"
+
+[node name="ShopCoinsPill" type="PanelContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopHeader"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="HBox" type="HBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopHeader/ShopCoinsPill"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopHeader/ShopCoinsPill/HBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("9_coin")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="ShopCoinsValue" type="Label" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopHeader/ShopCoinsPill/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+text = "0"
+
+[node name="ShopSubtitle" type="Label" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.75, 0.88, 1, 1)
+text = "Customize the radiant energy color of your wires & bulbs!"
+
+[node name="ShopTabsHBox" type="HBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TabSkinsBtn" type="Button" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopTabsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pill")
+text = "⚡ ENERGY SKINS"
+
+[node name="TabCoinsBtn" type="Button" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopTabsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pill")
+text = "🪙 GET COINS"
+
+[node name="ShopScroll" type="ScrollContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ShopContentContainer" type="VBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SkinsContainer" type="VBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopScroll/ShopContentContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="CoinPacksContainer" type="VBoxContainer" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox/ShopScroll/ShopContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ShopCloseBtn" type="Button" parent="ShopLayer/ShopCenter/ShopCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_next")
+text = "CLOSE STORE ✕"
+
+
+[node name="LeaderboardLayer" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeaderboardBackdrop" type="ColorRect" parent="LeaderboardLayer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.012, 0.035, 0.08, 0.85)
+
+[node name="LeaderboardCenter" type="CenterContainer" parent="LeaderboardLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeaderboardCard" type="PanelContainer" parent="LeaderboardLayer/LeaderboardCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(490, 620)
+layout_mode = 2
+pivot_offset = Vector2(245, 310)
+theme_override_styles/panel = SubResource("StyleBoxFlat_codex")
+
+[node name="Margin" type="MarginContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+text = "🏆 GLOBAL LEADERBOARD"
+
+[node name="UserStatsPill" type="PanelContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="UserStatsLabel" type="Label" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox/Header/UserStatsPill"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.2, 0.95, 0.85, 1)
+text = "Lvl 1 • ⭐ 0"
+
+[node name="Subtitle" type="Label" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_font_sub")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.72, 0.85, 1, 0.9)
+text = "Compete with circuit engineers worldwide on Google Play!"
+
+[node name="LeaderboardScroll" type="ScrollContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 370)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="LeaderboardRowsContainer" type="VBoxContainer" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox/LeaderboardScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PlayGamesBtn" type="Button" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pill")
+text = "🌐 VIEW GOOGLE PLAY LEADERBOARDS"
+
+[node name="LeaderboardCloseBtn" type="Button" parent="LeaderboardLayer/LeaderboardCenter/LeaderboardCard/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_next")
+text = "CLOSE ✕"

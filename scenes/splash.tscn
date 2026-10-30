@@ -1,0 +1,110 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/splash.gd" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/LuckiestGuy-Regular.ttf" id="2_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Nunito-Variable.ttf" id="3_font_sub"]
+[ext_resource type="Texture2D" path="res://assets/generated/app-icon.png" id="4_icon"]
+
+[node name="Splash" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.024, 0.055, 0.122, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LogoPanel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(400, 480)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/LogoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Center/LogoPanel/VBox"]
+custom_minimum_size = Vector2(250, 250)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("4_icon")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Center/LogoPanel/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 46
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.25, 0.55, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 4
+theme_override_colors/font_outline_color = Color(0.02, 0.15, 0.35, 1)
+theme_override_constants/outline_size = 6
+text = "ELECTRIC FLOW"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/LogoPanel/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_sub")
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.9, 0.82, 0.45, 1)
+theme_override_colors/font_shadow_color = Color(0.01, 0.04, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+text = "CONNECT THE CURRENT • POWER THE CITY"
+horizontal_alignment = 1
+
+[node name="Bottom" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_right = -60.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Loader" type="VBoxContainer" parent="Bottom"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LoadingLabel" type="Label" parent="Bottom/Loader"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_sub")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.65, 0.9, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.01, 0.05, 0.12, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "CHARGING POWER GRID..."
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="Bottom/Loader"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_sub")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.01, 0.08, 0.18, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+show_percentage = true

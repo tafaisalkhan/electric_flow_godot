@@ -1,0 +1,59 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_items/store_item.gd" id="script"]
+[ext_resource type="StyleBox" path="res://resources/ui_white_card.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="button"]
+
+[node name="StoreItem" type="Control"]
+custom_minimum_size = Vector2(420, 116)
+script = ExtResource("script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("card")
+
+[node name="Layout" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Text" type="VBoxContainer" parent="Panel/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Panel/Layout/Text"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Coin Pack"
+
+[node name="DetailLabel" type="Label" parent="Panel/Layout/Text"]
+theme_override_font_sizes/font_size = 16
+unique_name_in_owner = true
+layout_mode = 2
+text = "500 coins"
+
+[node name="PriceLabel" type="Label" parent="Panel/Layout/Text"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Price in store"
+
+[node name="ActionButton" type="Button" parent="Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(78, 50)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/normal = ExtResource("button")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Buy"
+

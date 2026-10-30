@@ -1,0 +1,66 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="FontVariation" path="res://resources/ui_bold_font.tres" id="bold_font"]
+
+[ext_resource type="Script" path="res://scripts/ui_items/setting_item.gd" id="script"]
+[ext_resource type="StyleBox" path="res://resources/ui_setting_row.tres" id="card"]
+[ext_resource type="StyleBox" path="res://resources/ui_clear_panel.tres" id="clear"]
+[ext_resource type="StyleBox" path="res://resources/ui_red_button.tres" id="button"]
+[ext_resource type="StyleBox" path="res://resources/ui_toggle_on.tres" id="toggle_on"]
+[ext_resource type="StyleBox" path="res://resources/ui_toggle_off.tres" id="toggle_off"]
+[ext_resource type="StyleBox" path="res://resources/ui_toggle_knob.tres" id="toggle_knob"]
+
+[node name="SettingItem" type="Control"]
+custom_minimum_size = Vector2(420, 72)
+script = ExtResource("script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("card")
+
+[node name="Layout" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="Panel/Layout"]
+theme_override_fonts/font = ExtResource("bold_font")
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Setting"
+
+[node name="Toggle" type="Button" parent="Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 38)
+layout_mode = 2
+size_flags_vertical = 4
+toggle_mode = true
+theme_override_styles/normal = ExtResource("toggle_off")
+theme_override_styles/hover = ExtResource("toggle_off")
+theme_override_styles/pressed = ExtResource("toggle_on")
+
+[node name="Knob" type="Panel" parent="Panel/Layout/Toggle"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 35.0
+offset_bottom = 35.0
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("toggle_knob")
+
+[node name="ActionButton" type="Button" parent="Panel/Layout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(72, 40)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("button")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "OPEN"
+
