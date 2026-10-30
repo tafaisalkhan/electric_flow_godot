@@ -77,7 +77,7 @@ We may periodically update this Privacy Policy to reflect updates in game featur
 If you have any questions, concerns, or requests regarding this Privacy Policy or your data in Electric Flow, please contact us at:
 
 - **Developer:** Muhammad Faisal Khan  
-- **Email:** muhammadfaisal78@gmail.com  
+- **Email:** muhammadfaysal.khan7@gmail.com  
 - **Package ID:** `com.electricflow.game`  
 
 ---
