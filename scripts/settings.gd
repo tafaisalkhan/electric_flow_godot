@@ -20,6 +20,8 @@ const BODY_FONT: Font = preload("res://assets/fonts/Fredoka-Variable.ttf")
 
 
 func _ready() -> void:
+	_apply_safe_area()
+	get_viewport().size_changed.connect(_apply_safe_area)
 	Palette.apply_background($Background, GameState.selected_theme)
 	_apply_popup_style()
 	difficulty_dropdown.select(GameState.difficulty_index)
@@ -296,3 +298,20 @@ func _on_cloud_sync_pressed() -> void:
 		cloud_status_label.text = "Syncing with Google Play Cloud..."
 		PlayGamesManager.load_from_cloud()
 		PlayGamesManager.save_to_cloud()
+
+func _apply_safe_area() -> void:
+	var safe_top := 0.0
+	if DisplayServer.has_method("get_display_safe_area"):
+		var safe_rect := DisplayServer.get_display_safe_area()
+		var window_size := DisplayServer.window_get_size()
+		if window_size.y > 0:
+			var viewport_size := Vector2(get_viewport().get_visible_rect().size)
+			var scale_factor := viewport_size.y / float(window_size.y)
+			safe_top = float(safe_rect.position.y) * scale_factor
+
+	var is_mobile := OS.has_feature("mobile") or OS.get_name() == "Android" or OS.get_name() == "iOS"
+	var min_top := 48.0 if is_mobile else 30.0
+	var top_inset := maxf(safe_top + (6.0 if safe_top > 0.0 else 0.0), min_top)
+	var margin_node := get_node_or_null("Margin")
+	if is_instance_valid(margin_node):
+		margin_node.offset_top = top_inset

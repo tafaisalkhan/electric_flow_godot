@@ -16,6 +16,7 @@ const ElectricLevels = preload("res://scripts/electric_levels.gd")
 @onready var prev_level_pill_btn: Button = get_node_or_null("%PrevLevelPillBtn")
 @onready var next_level_pill_btn: Button = get_node_or_null("%NextLevelPillBtn")
 @onready var hint_btn: Button = get_node_or_null("%HintButton")
+@onready var header_stars_pill: PanelContainer = get_node_or_null("%HeaderStarsPill")
 @onready var header_stars_label: Label = get_node_or_null("%HeaderStarsLabel")
 @onready var restart_btn: Button = get_node_or_null("%RestartButton")
 @onready var moves_label: Label = get_node_or_null("%MovesLabel")
@@ -39,8 +40,6 @@ const ElectricLevels = preload("res://scripts/electric_levels.gd")
 @onready var star3: TextureRect = %Star3
 @onready var victory_summary: Label = %VictorySummary
 @onready var reward_coins_label: Label = %RewardCoinsLabel
-@onready var fact_title: Label = %FactTitle
-@onready var fact_text: Label = %FactText
 @onready var confetti: Control = %ConfettiCannons
 @onready var landmark_display: Control = %LandmarkDisplay
 
@@ -193,10 +192,38 @@ func _ready() -> void:
 	victory_layer.visible = false
 	victory_layer.modulate.a = 0.0
 	
+	_apply_safe_area()
 	load_level(current_level_num)
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
+func _apply_safe_area() -> void:
+	var safe_top := 0.0
+	if DisplayServer.has_method("get_display_safe_area"):
+		var safe_rect := DisplayServer.get_display_safe_area()
+		var window_size := DisplayServer.window_get_size()
+		if window_size.y > 0:
+			var viewport_size := Vector2(get_viewport().get_visible_rect().size)
+			var scale_factor := viewport_size.y / float(window_size.y)
+			safe_top = float(safe_rect.position.y) * scale_factor
+
+	var is_mobile := OS.has_feature("mobile") or OS.get_name() == "Android" or OS.get_name() == "iOS"
+	var min_top := 44.0 if is_mobile else 14.0
+	var top_inset := maxf(safe_top + (6.0 if safe_top > 0.0 else 0.0), min_top)
+
+	var header_node := get_node_or_null("Header")
+	var top_row := get_node_or_null("Header/TopRow")
+	var board_center := get_node_or_null("%BoardCenter")
+
+	if is_instance_valid(top_row):
+		top_row.offset_top = top_inset
+		top_row.offset_bottom = top_inset + 48.0
+	if is_instance_valid(header_node):
+		header_node.offset_bottom = top_inset + 56.0
+	if is_instance_valid(board_center):
+		board_center.offset_top = top_inset + 62.0
+
 func _on_viewport_resized() -> void:
+	_apply_safe_area()
 	_layout_board()
 
 func load_daily_challenge() -> void:
@@ -576,14 +603,6 @@ func _trigger_victory() -> void:
 			victory_summary.text = "Solved in %d moves (Par: %d)" % [player_moves, current_min_moves]
 		else:
 			victory_summary.text = "Cleared in %d moves (Par: %d)" % [player_moves, current_min_moves]
-
-	# Update educational fact card in victory modal
-	var primary_t := ElectricComponentData.get_primary_component_for_level(current_level_num)
-	var comp_info := ElectricComponentData.get_component_info(primary_t)
-	if fact_title:
-		fact_title.text = "⚡ %s SCIENCE FACT:" % str(comp_info.get("name", "ELECTRONICS")).to_upper()
-	if fact_text:
-		fact_text.text = str(comp_info.get("fun_fact", ""))
 
 	# Animate Shine Rays expanding & rotating
 	if victory_shine_rays:

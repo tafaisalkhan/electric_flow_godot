@@ -9,6 +9,10 @@ const INTERSTITIAL_AD_ID: String = "ca-app-pub-1852108665659812/3455490196"
 const REWARDED_AD_ID: String = "ca-app-pub-1852108665659812/4290059714"
 const REWARDED_INTERSTITIAL_AD_ID: String = "ca-app-pub-3940256099942544/5354046379"
 
+# Official Google AdMob Test Ad Unit IDs (100% Fill Rate on all test builds)
+const TEST_BANNER_AD_ID: String = "ca-app-pub-3940256099942544/6300978111"
+const TEST_INTERSTITIAL_AD_ID: String = "ca-app-pub-3940256099942544/1033173712"
+
 static var instance: Node
 static var is_initialized: bool = false
 var _plugin_available: bool = false
@@ -73,9 +77,16 @@ func _load_banner_top() -> void:
 	_banner_view_top = AdView.new(banner_id, AdSize.BANNER, AdPosition.TOP)
 	_banner_top_cb = AdListener.new()
 	_banner_top_cb.on_ad_loaded = func():
-		print("[AdManager] Top Banner loaded!")
+		print("[AdManager] Top Banner loaded successfully! (ID: %s)" % banner_id)
 	_banner_top_cb.on_ad_failed_to_load = func(_err):
-		print("[AdManager] Top Banner failed to load: ", _err)
+		print("[AdManager] Top Banner failed to load with ID %s: %s" % [banner_id, str(_err)])
+		if banner_id != TEST_BANNER_AD_ID and not GameState.ads_removed:
+			print("[AdManager] Live ads not serving yet - falling back to Google Test Banner...")
+			banner_id = TEST_BANNER_AD_ID
+			if _banner_view_top and _banner_view_top.has_method("destroy"):
+				_banner_view_top.destroy()
+			_banner_view_top = null
+			_load_banner_top()
 	_banner_view_top.ad_listener = _banner_top_cb
 	_banner_view_top.load_ad(AdRequest.new())
 
@@ -86,9 +97,16 @@ func _load_banner_bottom() -> void:
 	_banner_view_bottom = AdView.new(banner_id, AdSize.BANNER, AdPosition.BOTTOM)
 	_banner_bottom_cb = AdListener.new()
 	_banner_bottom_cb.on_ad_loaded = func():
-		print("[AdManager] Bottom Banner loaded!")
+		print("[AdManager] Bottom Banner loaded successfully! (ID: %s)" % banner_id)
 	_banner_bottom_cb.on_ad_failed_to_load = func(_err):
-		print("[AdManager] Bottom Banner failed to load: ", _err)
+		print("[AdManager] Bottom Banner failed to load with ID %s: %s" % [banner_id, str(_err)])
+		if banner_id != TEST_BANNER_AD_ID and not GameState.ads_removed:
+			print("[AdManager] Live ads not serving yet - falling back to Google Test Banner...")
+			banner_id = TEST_BANNER_AD_ID
+			if _banner_view_bottom and _banner_view_bottom.has_method("destroy"):
+				_banner_view_bottom.destroy()
+			_banner_view_bottom = null
+			_load_banner_bottom()
 	_banner_view_bottom.ad_listener = _banner_bottom_cb
 	_banner_view_bottom.load_ad(AdRequest.new())
 
@@ -160,7 +178,11 @@ func _load_interstitial() -> void:
 
 	_interstitial_cb.on_ad_failed_to_load = func(_err) -> void:
 		_interstitial_ad = null
-		print("[AdManager] Interstitial failed to load: ", _err)
+		print("[AdManager] Interstitial failed to load with ID %s: %s" % [interstitial_id, str(_err)])
+		if interstitial_id != TEST_INTERSTITIAL_AD_ID and not GameState.ads_removed:
+			print("[AdManager] Live ads not serving yet - falling back to Google Test Interstitial...")
+			interstitial_id = TEST_INTERSTITIAL_AD_ID
+			_load_interstitial()
 
 	loader.load(interstitial_id, AdRequest.new(), _interstitial_cb)
 

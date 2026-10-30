@@ -7,6 +7,8 @@ signal daily_reward_requested
 signal rewarded_coins_requested
 
 func _ready() -> void:
+	_apply_safe_area()
+	get_viewport().size_changed.connect(_apply_safe_area)
 	%SettingsButton.pressed.connect(func(): screen_requested.emit("settings"))
 	%ScoreLink.pressed.connect(func(): screen_requested.emit("leaderboard"))
 	%PlayButton.pressed.connect(func(): play_requested.emit())
@@ -26,7 +28,7 @@ func set_data(data: Dictionary, title: String, tagline: String, score_title: Str
 	%ScoreUnit.text = score_unit.strip_edges()
 	%ScoreUnit.visible = not score_unit.strip_edges().is_empty()
 	%CoinLabel.text = "●  %d" % int(data.get("coins", 0))
-	%StarLabel.text = "★  %d" % int(data.get("stars", 0))
+	%StarLabel.visible = false
 	var ready := bool(data.get("daily_reward_available", true))
 	%RewardIcon.text = "🎁" if ready else "✓"
 	%RewardTitle.text = "Daily Reward Ready" if ready else "Reward Claimed"
@@ -50,3 +52,20 @@ func show_message(message: String) -> void:
 func set_background_tint(tint: Color) -> void:
 	if %Background is ColorRect:
 		%Background.color = tint
+
+func _apply_safe_area() -> void:
+	var safe_top := 0.0
+	if DisplayServer.has_method("get_display_safe_area"):
+		var safe_rect := DisplayServer.get_display_safe_area()
+		var window_size := DisplayServer.window_get_size()
+		if window_size.y > 0:
+			var viewport_size := Vector2(get_viewport().get_visible_rect().size)
+			var scale_factor := viewport_size.y / float(window_size.y)
+			safe_top = float(safe_rect.position.y) * scale_factor
+
+	var is_mobile := OS.has_feature("mobile") or OS.get_name() == "Android" or OS.get_name() == "iOS"
+	var min_top := 44.0 if is_mobile else 26.0
+	var top_inset := maxf(safe_top + (6.0 if safe_top > 0.0 else 0.0), min_top)
+	var margin_node: MarginContainer = get_node_or_null("Scroll/Margin")
+	if is_instance_valid(margin_node):
+		margin_node.add_theme_constant_override("margin_top", int(top_inset))
