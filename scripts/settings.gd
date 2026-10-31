@@ -243,7 +243,7 @@ func _update_purchase_status() -> void:
 		if restore_purchases_button:
 			restore_purchases_button.visible = false
 	else:
-		remove_ads_button.text = "🚫 REMOVE ADS • $1.99"
+		remove_ads_button.text = "🚫 REMOVE ADS • $4.99"
 		remove_ads_button.disabled = false
 		purchase_status.text = "One-time purchase • Removes all banner & interstitial ads"
 		purchase_status.add_theme_color_override("font_color", Color(0.34, 0.3, 0.24, 1))

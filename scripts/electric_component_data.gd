@@ -95,6 +95,36 @@ static func get_component_info(tile_type: int) -> Dictionary:
 				"how_it_works": "Sunlight photons hit the silicon semiconductor wafer and knock electrons free from atomic bonds (the photoelectric effect), generating a steady flow of clean direct-current electricity.",
 				"fun_fact": "Albert Einstein won his 1921 Nobel Prize in Physics not for his theory of relativity, but for mathematically proving how photons in light liberate electrons in the photoelectric effect!"
 			}
+		ElectricEnums.TileType.HOUSE_SMALL:
+			return {
+				"name": "Cozy Small House",
+				"symbol": "—[ ⌂ ]—",
+				"category": "Residential Load",
+				"unit": "Kilowatt-hours (kWh)",
+				"short_purpose": "Distributes electrical energy to household appliances, lighting, and heating.",
+				"how_it_works": "Electricity from the power source feeds into the house service weatherhead, distributing current through breaker circuits to illuminate windows and power amenities.",
+				"fun_fact": "The average residential home uses roughly 30 kilowatt-hours of electrical energy per day to keep all its lights, refrigerators, and electronics running!"
+			}
+		ElectricEnums.TileType.HOUSE_BIG:
+			return {
+				"name": "Suburban Villa Estate",
+				"symbol": "—[ 🏡 ]—",
+				"category": "High-Demand Residential Grid",
+				"unit": "Kilowatt-hours (kWh)",
+				"short_purpose": "Energizes multi-room lighting, air conditioning, and smart appliances.",
+				"how_it_works": "Utilizes a heavy-duty split-phase service panel to supply high-amperage current across multiple living floors and outdoor circuits.",
+				"fun_fact": "Modern smart suburban estates can intelligently combine rooftop solar generation with home battery banks to achieve near net-zero electrical grid demand!"
+			}
+		ElectricEnums.TileType.BUILDING:
+			return {
+				"name": "Metropolitan Skyscraper",
+				"symbol": "—[ 🏢 ]—",
+				"category": "Commercial Mega-Grid Consumer",
+				"unit": "Megawatt-hours (MWh)",
+				"short_purpose": "Powers commercial elevators, office illumination, HVAC chillers, and telecom antennas.",
+				"how_it_works": "Receives high-voltage municipal feeder lines connected to internal step-down transformers to distribute megawatts of electricity across dozens of office floors.",
+				"fun_fact": "A busy 100-story commercial skyscraper can consume as much electricity as a small town of 20,000 residents during peak business hours!"
+			}
 		_:
 			return {
 				"name": "Circuit Conduit",
@@ -108,41 +138,51 @@ static func get_component_info(tile_type: int) -> Dictionary:
 
 static func get_unlock_level(tile_type: int) -> int:
 	match tile_type:
-		ElectricEnums.TileType.BATTERY, ElectricEnums.TileType.BULB:
+		ElectricEnums.TileType.BATTERY, ElectricEnums.TileType.SOLAR, ElectricEnums.TileType.BULB:
 			return 1
 		ElectricEnums.TileType.FAN:
-			return 6
+			return 2
 		ElectricEnums.TileType.HEATER:
-			return 8
+			return 3
+		ElectricEnums.TileType.HOUSE_SMALL:
+			return 4
 		ElectricEnums.TileType.RESISTOR:
-			return 10
-		ElectricEnums.TileType.CAPACITOR:
-			return 13
+			return 5
 		ElectricEnums.TileType.VACUUM_TUBE:
-			return 19
+			return 6
+		ElectricEnums.TileType.CAPACITOR:
+			return 7
+		ElectricEnums.TileType.HOUSE_BIG:
+			return 8
 		ElectricEnums.TileType.TESLA_COIL:
-			return 20
-		ElectricEnums.TileType.SOLAR:
-			return 21
+			return 9
+		ElectricEnums.TileType.BUILDING:
+			return 10
 		_:
 			return 1
 
 static func is_newly_unlocked_at_level(level_num: int) -> int:
 	match level_num:
-		6:
-			return ElectricEnums.TileType.FAN
-		8:
-			return ElectricEnums.TileType.HEATER
-		10:
-			return ElectricEnums.TileType.RESISTOR
-		13:
-			return ElectricEnums.TileType.CAPACITOR
-		19:
-			return ElectricEnums.TileType.VACUUM_TUBE
-		20:
-			return ElectricEnums.TileType.TESLA_COIL
-		21:
+		1:
 			return ElectricEnums.TileType.SOLAR
+		2:
+			return ElectricEnums.TileType.FAN
+		3:
+			return ElectricEnums.TileType.HEATER
+		4:
+			return ElectricEnums.TileType.HOUSE_SMALL
+		5:
+			return ElectricEnums.TileType.RESISTOR
+		6:
+			return ElectricEnums.TileType.VACUUM_TUBE
+		7:
+			return ElectricEnums.TileType.CAPACITOR
+		8:
+			return ElectricEnums.TileType.HOUSE_BIG
+		9:
+			return ElectricEnums.TileType.TESLA_COIL
+		10:
+			return ElectricEnums.TileType.BUILDING
 		_:
 			return -1
 
@@ -153,7 +193,10 @@ static func get_primary_component_for_level(level_num: int) -> int:
 	
 	# Priority to highlight interesting components:
 	var priority_types := [
+		ElectricEnums.TileType.BUILDING,
 		ElectricEnums.TileType.TESLA_COIL,
+		ElectricEnums.TileType.HOUSE_BIG,
+		ElectricEnums.TileType.HOUSE_SMALL,
 		ElectricEnums.TileType.VACUUM_TUBE,
 		ElectricEnums.TileType.CAPACITOR,
 		ElectricEnums.TileType.RESISTOR,

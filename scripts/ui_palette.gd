@@ -16,5 +16,6 @@ static func color_for(theme_id: String) -> Color:
 			return theme_data["color"]
 	return Color.WHITE
 
-static func apply_background(background: TextureRect, theme_id: String) -> void:
-	background.modulate = color_for(theme_id)
+static func apply_background(background: Control, theme_id: String) -> void:
+	if is_instance_valid(background):
+		background.modulate = color_for(theme_id)

@@ -37,6 +37,62 @@ func _ready() -> void:
 	%SignInBox.visible = false
 	%Items.columns = 3 if screen_kind == "shop" else 1
 
+	var remove_ads_btn := get_node_or_null("%RemoveAdsButton") as Button
+	var restore_btn := get_node_or_null("%RestorePurchasesButton") as Button
+	if remove_ads_btn:
+		remove_ads_btn.pressed.connect(_on_remove_ads_pressed)
+	if restore_btn:
+		restore_btn.pressed.connect(_on_restore_purchases_pressed)
+	if IAPManager:
+		IAPManager.ads_removed_changed.connect(func(_rem: bool): _update_remove_ads_ui())
+		IAPManager.purchase_succeeded.connect(func(p: String):
+			if p == "remove_ads": _update_remove_ads_ui()
+		)
+	_update_remove_ads_ui()
+
+func _on_remove_ads_pressed() -> void:
+	if IAPManager:
+		IAPManager.purchase_product("remove_ads")
+	else:
+		GameState.ads_removed = true
+		GameState.save_progress()
+		if AdManager:
+			AdManager.remove_all_ads()
+		_update_remove_ads_ui()
+
+func _on_restore_purchases_pressed() -> void:
+	var purchase_status_lbl := get_node_or_null("%PurchaseStatus") as Label
+	if GameState.ads_removed:
+		if purchase_status_lbl:
+			purchase_status_lbl.text = "✓ Ads are already removed!"
+		return
+	if purchase_status_lbl:
+		purchase_status_lbl.text = "Checking store for purchases..."
+	if IAPManager:
+		IAPManager.restore_purchases()
+	await get_tree().create_timer(1.2).timeout
+	_update_remove_ads_ui()
+
+func _update_remove_ads_ui() -> void:
+	var remove_ads_btn := get_node_or_null("%RemoveAdsButton") as Button
+	var restore_btn := get_node_or_null("%RestorePurchasesButton") as Button
+	var purchase_status_lbl := get_node_or_null("%PurchaseStatus") as Label
+	if remove_ads_btn:
+		if GameState.ads_removed:
+			remove_ads_btn.text = "✓ ADS REMOVED"
+			remove_ads_btn.disabled = true
+			if purchase_status_lbl:
+				purchase_status_lbl.text = "✓ Ads permanently removed! Thank you!"
+			if restore_btn:
+				restore_btn.visible = false
+		else:
+			remove_ads_btn.text = "🚫  REMOVE ADS  •  $4.99"
+			remove_ads_btn.disabled = false
+			if purchase_status_lbl:
+				purchase_status_lbl.text = "One-time purchase • Removes all banner & interstitial ads"
+			if restore_btn:
+				restore_btn.visible = true
+
 func set_data(data: Dictionary) -> void:
 	_data = data
 	if is_node_ready():

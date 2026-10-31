@@ -81,13 +81,6 @@ static func _sanitize_level_dict(lvl: Dictionary) -> Dictionary:
 
 static func get_level(level_num: int) -> Dictionary:
 	level_num = clampi(level_num, 1, 999999)
-	_ensure_json_loaded()
-	
-	if level_num <= _cached_json_levels.size():
-		var lvl: Dictionary = _cached_json_levels[level_num - 1].duplicate(true)
-		if not lvl.has("min_moves"):
-			lvl["min_moves"] = 2
-		return lvl
 	return _generate_procedural_level(level_num)
 
 static func get_all_levels() -> Array[Dictionary]:
@@ -155,7 +148,10 @@ static func _is_level_solved(tiles: Array, rows: int, cols: int) -> bool:
 				n_type == ElectricEnums.TileType.FAN or
 				n_type == ElectricEnums.TileType.VACUUM_TUBE or
 				n_type == ElectricEnums.TileType.HEATER or
-				n_type == ElectricEnums.TileType.TESLA_COIL
+				n_type == ElectricEnums.TileType.TESLA_COIL or
+				n_type == ElectricEnums.TileType.HOUSE_SMALL or
+				n_type == ElectricEnums.TileType.HOUSE_BIG or
+				n_type == ElectricEnums.TileType.BUILDING
 			)
 			if is_target:
 				var t_ch: int = n_tile.get("channel", ElectricEnums.Channel.NONE)
@@ -180,7 +176,10 @@ static func _is_level_solved(tiles: Array, rows: int, cols: int) -> bool:
 			t_type == ElectricEnums.TileType.FAN or
 			t_type == ElectricEnums.TileType.VACUUM_TUBE or
 			t_type == ElectricEnums.TileType.HEATER or
-			t_type == ElectricEnums.TileType.TESLA_COIL
+			t_type == ElectricEnums.TileType.TESLA_COIL or
+			t_type == ElectricEnums.TileType.HOUSE_SMALL or
+			t_type == ElectricEnums.TileType.HOUSE_BIG or
+			t_type == ElectricEnums.TileType.BUILDING
 		):
 			targets.append(i)
 			
@@ -192,8 +191,8 @@ static func _is_level_solved(tiles: Array, rows: int, cols: int) -> bool:
 	return true
 
 # -------------------------------------------------------------
-# PROCEDURAL SOLVABLE LEVEL GENERATOR (Levels 31 to 1000)
-# Progressive Grid Scaling Every 3 Levels, 100% Board Utilization, Guaranteed Scramble
+# PROCEDURAL SOLVABLE LEVEL GENERATOR (Levels 1 to 999999)
+# Progressive Grid Scaling, Component Diversity, 100% Board Utilization, Guaranteed Scramble
 # -------------------------------------------------------------
 static func _generate_procedural_level(level_num: int) -> Dictionary:
 	var seed_val: int = (level_num * 104729 + 7919) % 2147483647
@@ -207,24 +206,31 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 	var rand_i := func(max_v: int) -> int:
 		return int(next_rand.call() * max_v)
 	
-	# Board size increases every 3 levels!
-	var group := int((level_num - 1) / 3)
+	# Board size scales gradually from 2x2 to 6x6
 	var rows := 2
 	var cols := 2
-	if group == 0: rows = 2; cols = 2
-	elif group == 1: rows = 3; cols = 3
-	elif group == 2: rows = 3; cols = 4
-	elif group == 3: rows = 4; cols = 4
-	elif group == 4: rows = 4; cols = 5
-	elif group == 5: rows = 5; cols = 5
-	elif group == 6: rows = 5; cols = 6
-	else: rows = 6; cols = 6 # Capped at 6x6 for optimal touch mobile scale
+	if level_num <= 3:
+		rows = 2; cols = 2
+	elif level_num <= 7:
+		rows = 3; cols = 3
+	elif level_num <= 14:
+		rows = 3; cols = 4
+	elif level_num <= 24:
+		rows = 4; cols = 4
+	elif level_num <= 38:
+		rows = 4; cols = 5
+	elif level_num <= 58:
+		rows = 5; cols = 5
+	elif level_num <= 85:
+		rows = 5; cols = 6
+	else:
+		rows = 6; cols = 6 # Capped at 6x6 for optimal touch mobile scale
 	
 	var total_tiles := rows * cols
 	var all_channels := [
 		ElectricEnums.Channel.CYAN,
-		ElectricEnums.Channel.GREEN,
 		ElectricEnums.Channel.YELLOW,
+		ElectricEnums.Channel.GREEN,
 		ElectricEnums.Channel.ORANGE,
 		ElectricEnums.Channel.MAGENTA
 	]
@@ -270,7 +276,7 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 			elif diff == Vector2i(0, 1): req |= ElectricEnums.DIR_RIGHT
 		req_ports[p] = req
 		
-	# 1. Source at path[0]
+	# 1. Source at path[0]: Alternating Solar (odd) and Battery (even)
 	var s_pos: Vector2i = path[0]
 	var s_idx := s_pos.x * cols + s_pos.y
 	var s_out: int = req_ports.get(s_pos, ElectricEnums.DIR_RIGHT)
@@ -291,12 +297,27 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 	# 2. Target at path[path.size() - 1]
 	var e_pos: Vector2i = path[path.size() - 1]
 	var e_idx := e_pos.x * cols + e_pos.y
-	var target_pool := [ElectricEnums.TileType.BULB, ElectricEnums.TileType.FAN]
+	var target_pool: Array[int] = [ElectricEnums.TileType.BULB]
+	if level_num >= 2: target_pool.append(ElectricEnums.TileType.FAN)
 	if level_num >= 3: target_pool.append(ElectricEnums.TileType.HEATER)
-	if level_num >= 5: target_pool.append(ElectricEnums.TileType.VACUUM_TUBE)
-	if level_num >= 7: target_pool.append(ElectricEnums.TileType.TESLA_COIL)
+	if level_num >= 4: target_pool.append(ElectricEnums.TileType.HOUSE_SMALL)
+	if level_num >= 6: target_pool.append(ElectricEnums.TileType.VACUUM_TUBE)
+	if level_num >= 8: target_pool.append(ElectricEnums.TileType.HOUSE_BIG)
+	if level_num >= 9: target_pool.append(ElectricEnums.TileType.TESLA_COIL)
+	if level_num >= 10: target_pool.append(ElectricEnums.TileType.BUILDING)
 	
 	var chosen_target: int = target_pool[(level_num - 1) % target_pool.size()]
+	if level_num == 1: chosen_target = ElectricEnums.TileType.BULB
+	elif level_num == 2: chosen_target = ElectricEnums.TileType.FAN
+	elif level_num == 3: chosen_target = ElectricEnums.TileType.HEATER
+	elif level_num == 4: chosen_target = ElectricEnums.TileType.HOUSE_SMALL
+	elif level_num == 5: chosen_target = ElectricEnums.TileType.BULB
+	elif level_num == 6: chosen_target = ElectricEnums.TileType.VACUUM_TUBE
+	elif level_num == 7: chosen_target = ElectricEnums.TileType.HEATER
+	elif level_num == 8: chosen_target = ElectricEnums.TileType.HOUSE_BIG
+	elif level_num == 9: chosen_target = ElectricEnums.TileType.TESLA_COIL
+	elif level_num == 10: chosen_target = ElectricEnums.TileType.BUILDING
+	
 	tiles[e_idx] = {
 		"type": chosen_target,
 		"channel": channel,
@@ -307,6 +328,7 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 	# 3. Intermediate components along the path (filling 100% of all cells)
 	var solved_rots := {}
 	var rotatable_indices: Array[int] = []
+	var straight_count := 0
 	
 	for i in range(1, path.size() - 1):
 		var p: Vector2i = path[i]
@@ -316,16 +338,20 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 		var t_type := ElectricEnums.TileType.WIRE_STRAIGHT
 		var solved_rot := 0
 		
-		if req == (ElectricEnums.DIR_UP | ElectricEnums.DIR_DOWN):
-			if level_num >= 4 and i % 4 == 0: t_type = ElectricEnums.TileType.RESISTOR
-			elif level_num >= 8 and i % 5 == 0: t_type = ElectricEnums.TileType.CAPACITOR
-			else: t_type = ElectricEnums.TileType.WIRE_STRAIGHT
-			solved_rot = 0
-		elif req == (ElectricEnums.DIR_LEFT | ElectricEnums.DIR_RIGHT):
-			if level_num >= 4 and i % 4 == 0: t_type = ElectricEnums.TileType.RESISTOR
-			elif level_num >= 8 and i % 5 == 0: t_type = ElectricEnums.TileType.CAPACITOR
-			else: t_type = ElectricEnums.TileType.WIRE_STRAIGHT
-			solved_rot = 1
+		var is_straight := (req == (ElectricEnums.DIR_UP | ElectricEnums.DIR_DOWN) or req == (ElectricEnums.DIR_LEFT | ElectricEnums.DIR_RIGHT))
+		if is_straight:
+			straight_count += 1
+			if level_num >= 5 and (straight_count == 1 or straight_count % 3 == 0):
+				t_type = ElectricEnums.TileType.RESISTOR
+			elif level_num >= 7 and straight_count % 2 == 0:
+				t_type = ElectricEnums.TileType.CAPACITOR
+			else:
+				t_type = ElectricEnums.TileType.WIRE_STRAIGHT
+				
+			if req == (ElectricEnums.DIR_UP | ElectricEnums.DIR_DOWN):
+				solved_rot = 0
+			else:
+				solved_rot = 1
 		elif req == (ElectricEnums.DIR_DOWN | ElectricEnums.DIR_RIGHT):
 			t_type = ElectricEnums.TileType.WIRE_CORNER
 			solved_rot = 0
@@ -374,8 +400,26 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 		else:
 			min_moves += (tgt - cur + 4) % 4
 			
-	var titles := ["Voltage Stream", "Grid Matrix", "Power Circuit", "Tesla Loop", "Energy Surge"]
-	var title_str := "%s %d" % [titles[(level_num - 1) % titles.size()], level_num]
+	var title_str := ""
+	match chosen_target:
+		ElectricEnums.TileType.BULB:
+			title_str = "Solar Illumination %d" % level_num if source_type == ElectricEnums.TileType.SOLAR else "Bulb Circuit %d" % level_num
+		ElectricEnums.TileType.FAN:
+			title_str = "Cooling Grid %d" % level_num
+		ElectricEnums.TileType.HEATER:
+			title_str = "Thermal Flow %d" % level_num
+		ElectricEnums.TileType.HOUSE_SMALL:
+			title_str = "Cottage Power %d" % level_num
+		ElectricEnums.TileType.VACUUM_TUBE:
+			title_str = "Tube Valve %d" % level_num
+		ElectricEnums.TileType.HOUSE_BIG:
+			title_str = "Villa Electrification %d" % level_num
+		ElectricEnums.TileType.TESLA_COIL:
+			title_str = "Tesla Plasma %d" % level_num
+		ElectricEnums.TileType.BUILDING:
+			title_str = "Metropolis Grid %d" % level_num
+		_:
+			title_str = "Circuit Grid %d" % level_num
 	
 	return {
 		"level": level_num,

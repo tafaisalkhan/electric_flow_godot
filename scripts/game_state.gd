@@ -98,7 +98,7 @@ func load_progress() -> void:
 	if not is_difficulty_unlocked(difficulty_index):
 		difficulty_index = 0
 	highest_level = maxi(1, highest_levels[difficulty_index])
-	requested_level = clampi(last_selected_levels[difficulty_index], 1, mini(highest_level, 1000))
+	requested_level = clampi(last_selected_levels[difficulty_index], 1, highest_level)
 
 func save_progress() -> void:
 	var config := ConfigFile.new()
@@ -239,7 +239,7 @@ func start_mode(mode: String) -> void:
 	match mode:
 		"daily": requested_level = daily_level()
 		"endless": requested_level = maxi(highest_level, 11)
-		_: requested_level = clampi(last_selected_levels[difficulty_index], 1, mini(highest_level, 1000))
+		_: requested_level = clampi(last_selected_levels[difficulty_index], 1, highest_level)
 
 func start_game_type(type_index: int) -> void:
 	game_mode = "selected"
@@ -249,7 +249,7 @@ func start_selected_level(level: int) -> void:
 	game_mode = "selected"
 	if level > highest_level:
 		return
-	requested_level = clampi(level, 1, 1000)
+	requested_level = clampi(level, 1, 99999)
 	last_selected_levels[difficulty_index] = requested_level
 	save_progress()
 func is_difficulty_unlocked(_index: int) -> bool:
@@ -262,12 +262,12 @@ func set_difficulty(index: int) -> bool:
 	highest_levels[difficulty_index] = maxi(highest_levels[difficulty_index], highest_level)
 	difficulty_index = index
 	highest_level = maxi(1, highest_levels[index])
-	requested_level = clampi(last_selected_levels[index], 1, mini(highest_level, 1000))
+	requested_level = clampi(last_selected_levels[index], 1, highest_level)
 	save_progress()
 	return true
 
 func remember_level(level: int) -> void:
-	requested_level = clampi(level, 1, 1000)
+	requested_level = clampi(level, 1, 99999)
 	last_selected_levels[difficulty_index] = requested_level
 	save_progress()
 

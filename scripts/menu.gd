@@ -106,6 +106,8 @@ func _refresh_ui() -> void:
 	})
 
 func _play() -> void:
+	GameState.game_mode = "continue"
+	GameState.requested_level = GameState.highest_level
 	get_tree().change_scene_to_file("res://scenes/electric_flow.tscn")
 
 func _daily_challenge() -> void:

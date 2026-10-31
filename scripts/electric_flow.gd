@@ -183,17 +183,19 @@ func _ready() -> void:
 	# Setup victory screen stars & summary cards
 	_setup_victory_ui_elements()
 	
-	# Pick level from GameState if set, otherwise default to Level 1
-	if GameState.requested_level > 0:
-		current_level_num = GameState.requested_level
-	else:
-		current_level_num = 1
-		
 	victory_layer.visible = false
 	victory_layer.modulate.a = 0.0
 	
 	_apply_safe_area()
-	load_level(current_level_num)
+	if GameState.game_mode == "daily":
+		load_daily_challenge()
+	elif GameState.requested_level > 0:
+		current_level_num = GameState.requested_level
+		load_level(current_level_num)
+	else:
+		current_level_num = GameState.highest_level
+		load_level(current_level_num)
+		
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
 func _apply_safe_area() -> void:
@@ -311,7 +313,10 @@ func _build_board_from_data(data: Dictionary) -> void:
 				ElectricEnums.TileType.HEATER,
 				ElectricEnums.TileType.FAN,
 				ElectricEnums.TileType.VACUUM_TUBE,
-				ElectricEnums.TileType.TESLA_COIL
+				ElectricEnums.TileType.TESLA_COIL,
+				ElectricEnums.TileType.HOUSE_SMALL,
+				ElectricEnums.TileType.HOUSE_BIG,
+				ElectricEnums.TileType.BUILDING
 			]:
 				targets_in_level.append(tile)
 	
@@ -628,6 +633,7 @@ func _trigger_victory() -> void:
 		next_button.disabled = true
 		next_button.modulate.a = 0.45
 		next_button.scale = Vector2(0.85, 0.85)
+		next_button.text = "MAIN MENU" if is_daily_mode else "NEXT LEVEL"
 
 func _setup_victory_ui_elements() -> void:
 	# Initial reset of victory elements
@@ -869,7 +875,11 @@ func _on_next_level_pressed() -> void:
 	if is_coin_animation_playing:
 		return
 	_play_click_sfx()
-	if (levels_completed_count > 0 and levels_completed_count % 3 == 0) or (current_level_num % 3 == 0 and not is_daily_mode):
+	if is_daily_mode:
+		GameState.game_mode = "continue"
+		get_tree().change_scene_to_file("res://scenes/menu.tscn")
+		return
+	if (levels_completed_count > 0 and levels_completed_count % 3 == 0) or (current_level_num % 3 == 0):
 		AdManager.show_interstitial()
 	var next_idx := current_level_num + 1
 	if next_idx > ElectricLevels.get_total_levels():
@@ -1005,7 +1015,7 @@ func _create_level_select_dialog() -> void:
 	jump_go_btn.custom_minimum_size = Vector2(60, 36)
 	jump_go_btn.pressed.connect(func():
 		var target := int(jump_input.text)
-		if target >= 1 and target <= 1000:
+		if target >= 1 and target <= 99999:
 			_play_click_sfx()
 			load_level(target)
 			_close_level_select_dialog()
@@ -1037,7 +1047,7 @@ func _create_level_select_dialog() -> void:
 	page_nav.add_child(prev_page_btn)
 	
 	var page_lbl := Label.new()
-	page_lbl.text = "Page 1 / 34"
+	page_lbl.text = "Page 1"
 	page_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	page_lbl.add_theme_font_override("font", GAME_FONT)
 	page_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1049,14 +1059,15 @@ func _create_level_select_dialog() -> void:
 	next_page_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	page_nav.add_child(next_page_btn)
 	
+	var max_page := 3333
 	# Start on page containing current_level_num
-	level_select_page = clampi(int(float(current_level_num - 1) / 30.0), 0, 33)
+	level_select_page = clampi(int(float(current_level_num - 1) / 30.0), 0, max_page)
 	
 	var update_page := func():
 		_populate_level_page(grid, level_select_page)
-		page_lbl.text = "Page %d / 34" % (level_select_page + 1)
+		page_lbl.text = "Page %d" % (level_select_page + 1)
 		prev_page_btn.disabled = (level_select_page == 0)
-		next_page_btn.disabled = (level_select_page >= 33)
+		next_page_btn.disabled = (level_select_page >= max_page)
 	
 	prev_page_btn.pressed.connect(func():
 		_play_click_sfx()
@@ -1067,7 +1078,7 @@ func _create_level_select_dialog() -> void:
 	
 	next_page_btn.pressed.connect(func():
 		_play_click_sfx()
-		if level_select_page < 33:
+		if level_select_page < max_page:
 			level_select_page += 1
 			update_page.call()
 	)
@@ -1080,7 +1091,7 @@ func _populate_level_page(grid: GridContainer, page: int) -> void:
 		
 	var page_size := 30
 	var start_lvl := page * page_size + 1
-	var end_lvl := mini(start_lvl + page_size - 1, 1000)
+	var end_lvl := mini(start_lvl + page_size - 1, 99999)
 	
 	for i in range(start_lvl, end_lvl + 1):
 		var lvl_data := ElectricLevels.get_level(i)
@@ -1793,6 +1804,7 @@ func _populate_leaderboard() -> void:
 func _on_back_pressed() -> void:
 	_play_click_sfx()
 	AdManager.hide_banner_top()
+	GameState.game_mode = "continue"
 	GameState.save_progress()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
@@ -1805,7 +1817,8 @@ func _update_level_nav() -> void:
 		if is_instance_valid(next_level_pill_btn):
 			next_level_pill_btn.visible = false
 		if is_instance_valid(header_level_label):
-			header_level_label.text = "DAILY"
+			var date := Time.get_date_dict_from_system()
+			header_level_label.text = "DAILY %02d/%02d" % [int(date.month), int(date.day)]
 		return
 		
 	if is_instance_valid(prev_level_pill_btn):

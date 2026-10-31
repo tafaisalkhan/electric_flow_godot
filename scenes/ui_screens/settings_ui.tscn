@@ -38,7 +38,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="FrameBox" type="Control" parent="Center"]
-custom_minimum_size = Vector2(490, 530)
+custom_minimum_size = Vector2(490, 680)
 layout_mode = 2
 
 [node name="Panel" type="PanelContainer" parent="Center/FrameBox"]
@@ -114,7 +114,7 @@ theme_override_styles/normal = ExtResource("light")
 text = "BOOSTS"
 
 [node name="Scroll" type="ScrollContainer" parent="Center/FrameBox/Panel/Layout"]
-custom_minimum_size = Vector2(0, 238)
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -147,6 +147,34 @@ layout_mode = 2
 theme_override_styles/normal = ExtResource("red")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Sign in"
+
+[node name="RemoveAdsButton" type="Button" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/normal = ExtResource("red")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "🚫  REMOVE ADS  •  $4.99"
+
+[node name="PurchaseStatus" type="Label" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.42, 0.62, 1)
+theme_override_font_sizes/font_size = 13
+text = "One-time purchase • Removes all banner & interstitial ads"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RestorePurchasesButton" type="Button" parent="Center/FrameBox/Panel/Layout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/normal = ExtResource("light")
+theme_override_font_sizes/font_size = 14
+text = "RESTORE PURCHASES"
 
 [node name="AboutButton" type="Button" parent="Center/FrameBox/Panel/Layout"]
 unique_name_in_owner = true
