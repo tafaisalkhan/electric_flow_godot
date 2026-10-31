@@ -83,6 +83,14 @@ static func _sanitize_level_dict(lvl: Dictionary) -> Dictionary:
 	clean["tiles"] = clean_tiles
 	return clean
 
+static func get_tee_rotation_for_req(req: int) -> int:
+	var base_p := ElectricEnums.get_base_ports(ElectricEnums.TileType.WIRE_TEE)
+	for r in range(4):
+		var p := ElectricEnums.rotate_mask_cw(base_p, r)
+		if (p & req) == req:
+			return r
+	return 0
+
 static func get_level(level_num: int) -> Dictionary:
 	level_num = clampi(level_num, 1, 999999)
 	return _generate_procedural_level(level_num)
@@ -280,7 +288,12 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 			elif diff == Vector2i(0, 1): req |= ElectricEnums.DIR_RIGHT
 		req_ports[p] = req
 		
-	# 1. Source at path[0]: Alternating Solar (odd) and Battery (even)
+	# 1. Sources & Multi-Target Configuration
+	var is_dual_source := (level_num >= 20)
+	var split_idx: int = int(path.size() * 0.5) if is_dual_source else -1
+	var is_multi_target := (level_num >= 14 and not is_dual_source)
+	var mid_target_idx: int = int(path.size() * 0.48) if is_multi_target else -1
+	
 	var s_pos: Vector2i = path[0]
 	var s_idx := s_pos.x * cols + s_pos.y
 	var s_out: int = req_ports.get(s_pos, ElectricEnums.DIR_RIGHT)
@@ -290,7 +303,7 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 	elif s_out == ElectricEnums.DIR_DOWN: s_rot = 2
 	elif s_out == ElectricEnums.DIR_LEFT: s_rot = 3
 	
-	var source_type := ElectricEnums.TileType.SOLAR if (level_num % 2 == 1) else ElectricEnums.TileType.BATTERY
+	var source_type := ElectricEnums.TileType.BATTERY if is_dual_source else (ElectricEnums.TileType.SOLAR if (level_num % 2 == 1) else ElectricEnums.TileType.BATTERY)
 	tiles[s_idx] = {
 		"type": source_type,
 		"channel": channel,
@@ -298,7 +311,7 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 		"rotatable": false
 	}
 	
-	# 2. Target at path[path.size() - 1]
+	# 2. End target setup
 	var e_pos: Vector2i = path[path.size() - 1]
 	var e_idx := e_pos.x * cols + e_pos.y
 	var target_pool: Array[int] = [ElectricEnums.TileType.BULB]
@@ -322,28 +335,111 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 	elif level_num == 9: chosen_target = ElectricEnums.TileType.TESLA_COIL
 	elif level_num == 10: chosen_target = ElectricEnums.TileType.BUILDING
 	
-	tiles[e_idx] = {
-		"type": chosen_target,
-		"channel": channel,
-		"rot": 0,
-		"rotatable": false
-	}
+	var channel_2: int = all_channels[(level_num) % all_channels.size()]
 	
-	# 3. Intermediate components along the path (filling 100% of all cells)
+	if is_dual_source:
+		# Secondary consumer for source 1
+		var s1_t_pos: Vector2i = path[split_idx - 1]
+		var s1_t_idx := s1_t_pos.x * cols + s1_t_pos.y
+		var t1_type: int = ElectricEnums.TileType.HOUSE_SMALL if (level_num % 2 == 0) else ElectricEnums.TileType.FAN
+		tiles[s1_t_idx] = {
+			"type": t1_type,
+			"channel": channel,
+			"rot": 0,
+			"rotatable": false
+		}
+		
+		# Secondary power source (Solar Panel) feeding circuit 2
+		var s2_pos: Vector2i = path[split_idx]
+		var s2_idx := s2_pos.x * cols + s2_pos.y
+		var diff2: Vector2i = path[split_idx + 1] - path[split_idx]
+		var s2_rot := 0
+		if diff2 == Vector2i(-1, 0): s2_rot = 0
+		elif diff2 == Vector2i(0, 1): s2_rot = 1
+		elif diff2 == Vector2i(1, 0): s2_rot = 2
+		elif diff2 == Vector2i(0, -1): s2_rot = 3
+		tiles[s2_idx] = {
+			"type": ElectricEnums.TileType.SOLAR,
+			"channel": channel_2,
+			"rot": s2_rot,
+			"rotatable": false
+		}
+		
+		# End target powered by circuit 2
+		tiles[e_idx] = {
+			"type": chosen_target,
+			"channel": channel_2,
+			"rot": 0,
+			"rotatable": false
+		}
+	elif is_multi_target:
+		# Intermediate secondary consumer along continuous circuit
+		var mid_pos: Vector2i = path[mid_target_idx]
+		var mid_idx := mid_pos.x * cols + mid_pos.y
+		var mid_type: int = ElectricEnums.TileType.HOUSE_SMALL if (level_num % 2 == 0) else ElectricEnums.TileType.FAN
+		tiles[mid_idx] = {
+			"type": mid_type,
+			"channel": channel,
+			"rot": 0,
+			"rotatable": false
+		}
+		
+		tiles[e_idx] = {
+			"type": chosen_target,
+			"channel": channel,
+			"rot": 0,
+			"rotatable": false
+		}
+	else:
+		tiles[e_idx] = {
+			"type": chosen_target,
+			"channel": channel,
+			"rot": 0,
+			"rotatable": false
+		}
+	
+	# 3. Locked / Fixed Obstacle conduit selection (level 12+ 1 tile, level 30+ 2 tiles)
+	var locked_path_indices := {}
+	if level_num >= 12:
+		var lk1 := int(path.size() * 0.28)
+		if lk1 > 0 and lk1 < path.size() - 1 and lk1 != split_idx and lk1 != (split_idx - 1) and lk1 != mid_target_idx:
+			locked_path_indices[lk1] = true
+	if level_num >= 30:
+		var lk2 := int(path.size() * 0.72)
+		if lk2 > 0 and lk2 < path.size() - 1 and lk2 != split_idx and lk2 != (split_idx - 1) and lk2 != mid_target_idx:
+			locked_path_indices[lk2] = true
+	
+	# 4. Intermediate components along the path
 	var solved_rots := {}
+	var path_coords := {}
 	var rotatable_indices: Array[int] = []
 	var straight_count := 0
 	
 	for i in range(1, path.size() - 1):
+		if is_dual_source and (i == split_idx - 1 or i == split_idx):
+			continue
+		if is_multi_target and i == mid_target_idx:
+			continue
+			
 		var p: Vector2i = path[i]
 		var idx := p.x * cols + p.y
 		var req: int = req_ports.get(p, 0)
+		var is_locked: bool = locked_path_indices.has(i)
 		
 		var t_type := ElectricEnums.TileType.WIRE_STRAIGHT
 		var solved_rot := 0
 		
 		var is_straight := (req == (ElectricEnums.DIR_UP | ElectricEnums.DIR_DOWN) or req == (ElectricEnums.DIR_LEFT | ElectricEnums.DIR_RIGHT))
-		if is_straight:
+		var place_tee := (level_num >= 6 and (i % 4 == 2))
+		var place_cross := (level_num >= 18 and (i % 6 == 3) and not place_tee)
+		
+		if place_tee:
+			t_type = ElectricEnums.TileType.WIRE_TEE
+			solved_rot = get_tee_rotation_for_req(req)
+		elif place_cross:
+			t_type = ElectricEnums.TileType.WIRE_CROSS
+			solved_rot = 0
+		elif is_straight:
 			straight_count += 1
 			if level_num >= 5 and (straight_count == 1 or straight_count % 3 == 0):
 				t_type = ElectricEnums.TileType.RESISTOR
@@ -370,17 +466,29 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 			solved_rot = 3
 			
 		solved_rots[idx] = solved_rot
-		rotatable_indices.append(idx)
+		path_coords[idx] = p
 		
-		tiles[idx] = {
-			"type": t_type,
-			"channel": ElectricEnums.Channel.NONE,
-			"rot": solved_rot,
-			"target_rot": solved_rot,
-			"rotatable": true
-		}
+		if is_locked:
+			tiles[idx] = {
+				"type": t_type,
+				"channel": ElectricEnums.Channel.NONE,
+				"rot": solved_rot,
+				"target_rot": solved_rot,
+				"rotatable": false,
+				"is_locked": true
+			}
+		else:
+			rotatable_indices.append(idx)
+			tiles[idx] = {
+				"type": t_type,
+				"channel": ElectricEnums.Channel.NONE,
+				"rot": solved_rot,
+				"target_rot": solved_rot,
+				"rotatable": true,
+				"is_locked": false
+			}
 		
-	# 4. Scramble rotatable tiles so initiallyLit == 0
+	# 5. Scramble rotatable tiles so initiallyLit == 0
 	for idx in rotatable_indices:
 		var s_r: int = solved_rots[idx]
 		var delta: int = 1 + int(rand_i.call(3))
@@ -393,7 +501,7 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 			tiles[idx]["rot"] = (tiles[idx]["rot"] + 1) % 4
 		scramble_attempts += 1
 		
-	# Calculate min moves
+	# 6. Calculate min moves
 	var min_moves := 0
 	for idx in rotatable_indices:
 		var cur: int = tiles[idx]["rot"]
@@ -401,29 +509,52 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 		var t_type: int = tiles[idx]["type"]
 		if t_type == ElectricEnums.TileType.WIRE_STRAIGHT or t_type == ElectricEnums.TileType.RESISTOR or t_type == ElectricEnums.TileType.CAPACITOR:
 			if (cur % 2) != (tgt % 2): min_moves += 1
+		elif t_type == ElectricEnums.TileType.WIRE_CROSS:
+			pass
+		elif t_type == ElectricEnums.TileType.WIRE_TEE:
+			var req: int = req_ports.get(path_coords.get(idx, Vector2i(-1, -1)), 0)
+			var base_p := ElectricEnums.get_base_ports(ElectricEnums.TileType.WIRE_TEE)
+			var d_min := 4
+			for r in range(4):
+				var p := ElectricEnums.rotate_mask_cw(base_p, r)
+				if (p & req) == req:
+					var dist := (r - cur + 4) % 4
+					if dist < d_min:
+						d_min = dist
+			min_moves += (d_min % 4)
 		else:
 			min_moves += (tgt - cur + 4) % 4
 			
+	var min_moves_val: int = maxi(min_moves, 1)
+	var max_moves := 0
+	if level_num > 5:
+		max_moves = min_moves_val + 6 + int(total_tiles * 0.35)
+			
 	var title_str := ""
-	match chosen_target:
-		ElectricEnums.TileType.BULB:
-			title_str = "Solar Illumination %d" % level_num if source_type == ElectricEnums.TileType.SOLAR else "Bulb Circuit %d" % level_num
-		ElectricEnums.TileType.FAN:
-			title_str = "Cooling Grid %d" % level_num
-		ElectricEnums.TileType.HEATER:
-			title_str = "Thermal Flow %d" % level_num
-		ElectricEnums.TileType.HOUSE_SMALL:
-			title_str = "Cottage Power %d" % level_num
-		ElectricEnums.TileType.VACUUM_TUBE:
-			title_str = "Tube Valve %d" % level_num
-		ElectricEnums.TileType.HOUSE_BIG:
-			title_str = "Villa Electrification %d" % level_num
-		ElectricEnums.TileType.TESLA_COIL:
-			title_str = "Tesla Plasma %d" % level_num
-		ElectricEnums.TileType.BUILDING:
-			title_str = "Metropolis Grid %d" % level_num
-		_:
-			title_str = "Circuit Grid %d" % level_num
+	if is_dual_source:
+		title_str = "Dual Grid Metropolis %d" % level_num
+	elif is_multi_target:
+		title_str = "Multi-Load Circuit %d" % level_num
+	else:
+		match chosen_target:
+			ElectricEnums.TileType.BULB:
+				title_str = "Solar Illumination %d" % level_num if source_type == ElectricEnums.TileType.SOLAR else "Bulb Circuit %d" % level_num
+			ElectricEnums.TileType.FAN:
+				title_str = "Cooling Grid %d" % level_num
+			ElectricEnums.TileType.HEATER:
+				title_str = "Thermal Flow %d" % level_num
+			ElectricEnums.TileType.HOUSE_SMALL:
+				title_str = "Cottage Power %d" % level_num
+			ElectricEnums.TileType.VACUUM_TUBE:
+				title_str = "Tube Valve %d" % level_num
+			ElectricEnums.TileType.HOUSE_BIG:
+				title_str = "Villa Electrification %d" % level_num
+			ElectricEnums.TileType.TESLA_COIL:
+				title_str = "Tesla Plasma %d" % level_num
+			ElectricEnums.TileType.BUILDING:
+				title_str = "Metropolis Grid %d" % level_num
+			_:
+				title_str = "Circuit Grid %d" % level_num
 	
 	return {
 		"level": level_num,
@@ -431,5 +562,6 @@ static func _generate_procedural_level(level_num: int) -> Dictionary:
 		"cols": cols,
 		"title": title_str,
 		"tiles": tiles,
-		"min_moves": maxi(min_moves, 1)
+		"min_moves": min_moves_val,
+		"max_moves": max_moves
 	}

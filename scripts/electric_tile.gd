@@ -14,6 +14,7 @@ var tile_type: int = ElectricEnums.TileType.EMPTY
 var channel: int = ElectricEnums.Channel.NONE
 var current_rotation_step: int = 0 # 0, 1, 2, 3 (each is 90 deg CW)
 var is_rotatable: bool = true
+var is_locked: bool = false
 var custom_ports: int = 0 # If non-zero, overrides base ports
 
 # Circuit state
@@ -72,6 +73,12 @@ func configure(r: int, c: int, data: Dictionary, size_px: float) -> void:
 	target_rot = int(data.get("target_rot", -1))
 	is_rotatable = bool(data.get("rotatable", true))
 	custom_ports = int(data.get("ports", 0))
+	is_locked = bool(data.get("is_locked", false)) or (not is_rotatable and tile_type in [
+		ElectricEnums.TileType.WIRE_STRAIGHT,
+		ElectricEnums.TileType.WIRE_CORNER,
+		ElectricEnums.TileType.WIRE_TEE,
+		ElectricEnums.TileType.WIRE_CROSS
+	])
 	
 	visual_rotation_rad = current_rotation_step * (PI / 2.0)
 	is_powered = false
@@ -148,6 +155,15 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if is_rotatable and not is_animating_rotation:
 			rotate_clockwise()
+		elif is_locked and not is_animating_rotation:
+			_play_locked_shake()
+
+func _play_locked_shake() -> void:
+	var orig_x := position.x
+	var tw := create_tween()
+	tw.tween_property(self, "position:x", orig_x - 3.5, 0.04).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(self, "position:x", orig_x + 3.5, 0.05).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(self, "position:x", orig_x, 0.04).set_trans(Tween.TRANS_SINE)
 
 func rotate_clockwise() -> void:
 	is_animating_rotation = true
@@ -279,7 +295,7 @@ func draw_style_tile_plate(rect: Rect2, corner_rad: float, bg_col: Color, border
 	draw_rounded_rect_outline(body_rect, corner_rad * 0.85, border_col, 1.8)
 	draw_rounded_rect_outline(main_rect, corner_rad, Color(0.26, 0.42, 0.66, 0.9), 1.2)
 	
-	# 5. Corner Micro-Rivets / Screws (4 corners)
+	# 5. Corner Micro-Rivets / Screws (4 corners) or Industrial Golden Lock Anchors
 	var screw_inset := corner_rad * 0.68
 	var screw_rad := 2.5
 	var s_col := Color(0.65, 0.72, 0.82, 0.85)
@@ -290,10 +306,26 @@ func draw_style_tile_plate(rect: Rect2, corner_rad: float, bg_col: Color, border
 		Vector2(body_rect.end.x - screw_inset, body_rect.end.y - screw_inset),
 		Vector2(body_rect.position.x + screw_inset, body_rect.end.y - screw_inset)
 	]
-	for sc in screw_corners:
-		draw_circle(sc + Vector2(0, 0.8), screw_rad + 0.8, Color(0.03, 0.05, 0.09, 0.7))
-		draw_circle(sc, screw_rad, s_col)
-		draw_circle(sc + Vector2(-0.5, -0.5), screw_rad * 0.45, s_glint)
+	if is_locked:
+		# Heavy-duty bolted anchor brackets in reinforced brass / gold
+		draw_rounded_rect_outline(body_rect, corner_rad * 0.85, Color(1.0, 0.78, 0.2, 0.9), 2.2)
+		for sc in screw_corners:
+			draw_circle(sc + Vector2(0, 1.0), screw_rad + 2.0, Color(0.04, 0.03, 0.01, 0.85))
+			draw_circle(sc, screw_rad + 1.2, Color(0.92, 0.72, 0.22, 1.0))
+			draw_circle(sc, screw_rad * 0.55, Color(0.42, 0.30, 0.08, 1.0))
+			draw_circle(sc + Vector2(-0.6, -0.6), screw_rad * 0.4, Color(1.0, 0.95, 0.65, 0.9))
+			
+		# Small discrete anchor padlock badge in corner
+		var lock_c := body_rect.position + Vector2(corner_rad * 1.1, corner_rad * 1.1)
+		var lock_body := Rect2(lock_c.x - 4.5, lock_c.y - 1.5, 9.0, 7.5)
+		draw_rounded_rect(lock_body, 1.5, Color(0.95, 0.75, 0.18, 0.95))
+		draw_rounded_rect_outline(lock_body, 1.5, Color(0.4, 0.28, 0.05, 0.95), 1.0)
+		draw_arc(lock_c + Vector2(0, -1.5), 3.0, PI, TAU, 8, Color(0.85, 0.9, 0.95, 0.95), 1.5)
+	else:
+		for sc in screw_corners:
+			draw_circle(sc + Vector2(0, 0.8), screw_rad + 0.8, Color(0.03, 0.05, 0.09, 0.7))
+			draw_circle(sc, screw_rad, s_col)
+			draw_circle(sc + Vector2(-0.5, -0.5), screw_rad * 0.45, s_glint)
 
 func get_active_color(ch: int) -> Color:
 	return ElectricEnums.get_channel_color(ch, GameState.selected_theme)

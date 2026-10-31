@@ -9,6 +9,7 @@ func _init() -> void:
 	print("--- STARTING ELECTRIC FLOW VERIFICATION ---")
 	test_levels_exist()
 	test_early_levels_progression_and_solar()
+	test_progressive_challenge_mechanics()
 	test_daily_challenge()
 	test_unlimited_levels_procedural()
 	print("--- ALL ELECTRIC FLOW TESTS PASSED SUCCESSFULLY! ---")
@@ -84,6 +85,71 @@ func test_early_levels_progression_and_solar() -> void:
 	var l10_types := _get_types_in_level(l10)
 	assert(l10_types.has(ElectricEnums.TileType.BUILDING), "Level 10 must feature Metropolitan Building")
 	print("[PASS] Level 10 (3x4) Metropolitan Skyscraper Building verified")
+
+func test_progressive_challenge_mechanics() -> void:
+	# 1. Moves limit verification: Level 1-5 has max_moves == 0 (unlimited practice)
+	for i in range(1, 6):
+		var li := ElectricLevels.get_level(i)
+		assert(int(li.get("max_moves", 0)) == 0, "Level %d should have unlimited moves (0)" % i)
+	print("[PASS] Levels 1-5 have unlimited practice moves budget")
+
+	# 2. Level 6: 3-way T-junction WIRE_TEE introduced & max_moves budget active
+	var l6 := ElectricLevels.get_level(6)
+	var l6_types := _get_types_in_level(l6)
+	assert(l6_types.has(ElectricEnums.TileType.WIRE_TEE), "Level 6 must introduce WIRE_TEE 3-way branching conduits")
+	assert(int(l6.get("max_moves", 0)) > int(l6.get("min_moves", 0)), "Level 6 must have active max_moves limit")
+	print("[PASS] Level 6 (3-Way T-Junction & Move Budget) verified")
+
+	# 3. Level 12: Fixed / Locked Obstacle Wire Tile
+	var l12 := ElectricLevels.get_level(12)
+	var l12_locked_count := 0
+	for t in l12["tiles"]:
+		if bool(t.get("is_locked", false)):
+			assert(bool(t.get("rotatable", true)) == false, "Locked tile must not be rotatable")
+			l12_locked_count += 1
+	assert(l12_locked_count >= 1, "Level 12 must have at least 1 locked immovable wire obstacle")
+	print("[PASS] Level 12 (Locked Obstacle Conduit) verified")
+
+	# 4. Level 14: Multi-Target Consumer network
+	var l14 := ElectricLevels.get_level(14)
+	var l14_target_count := 0
+	for t in l14["tiles"]:
+		var tp: int = int(t.get("type", 0))
+		if tp in [
+			ElectricEnums.TileType.BULB,
+			ElectricEnums.TileType.FAN,
+			ElectricEnums.TileType.VACUUM_TUBE,
+			ElectricEnums.TileType.HEATER,
+			ElectricEnums.TileType.TESLA_COIL,
+			ElectricEnums.TileType.HOUSE_SMALL,
+			ElectricEnums.TileType.HOUSE_BIG,
+			ElectricEnums.TileType.BUILDING
+		]:
+			l14_target_count += 1
+	assert(l14_target_count >= 2, "Level 14 must have multi-target intermediate consumers (found %d)" % l14_target_count)
+	print("[PASS] Level 14 (Multi-Target Network: %d consumers) verified" % l14_target_count)
+
+	# 5. Level 18: 4-Way Crossings (WIRE_CROSS)
+	var l18 := ElectricLevels.get_level(18)
+	var l18_types := _get_types_in_level(l18)
+	assert(l18_types.has(ElectricEnums.TileType.WIRE_CROSS), "Level 18 must feature WIRE_CROSS 4-way crossings")
+	print("[PASS] Level 18 (WIRE_CROSS 4-way crossing) verified")
+
+	# 6. Level 20: Dual-Source Grid (Battery + Solar simultaneously)
+	var l20 := ElectricLevels.get_level(20)
+	var l20_types := _get_types_in_level(l20)
+	assert(l20_types.has(ElectricEnums.TileType.BATTERY), "Level 20 must feature Battery power source")
+	assert(l20_types.has(ElectricEnums.TileType.SOLAR), "Level 20 must feature Solar power source")
+	print("[PASS] Level 20 (Dual-Source Battery + Solar Network) verified")
+
+	# 7. Level 30: 2 Fixed / Locked Obstacle Wire Tiles
+	var l30 := ElectricLevels.get_level(30)
+	var l30_locked_count := 0
+	for t in l30["tiles"]:
+		if bool(t.get("is_locked", false)):
+			l30_locked_count += 1
+	assert(l30_locked_count >= 2, "Level 30 must have 2 locked immovable wire obstacles")
+	print("[PASS] Level 30 (Dual Locked Obstacle Conduits) verified")
 
 func test_daily_challenge() -> void:
 	var daily1 := ElectricLevels.get_daily_challenge(1)

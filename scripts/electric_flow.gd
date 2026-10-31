@@ -106,6 +106,8 @@ var cached_applause_sfx: AudioStreamWAV = null
 # Moves & Stars tracking
 var player_moves: int = 0
 var current_min_moves: int = 1
+var current_max_moves: int = 0
+var out_of_moves_modal: Control = null
 var levels_completed_count: int = 0
 var victory_stars_box: HBoxContainer = null
 var victory_star_labels: Array[Label] = []
@@ -237,6 +239,10 @@ func load_daily_challenge(daily_idx: int = 1) -> void:
 	
 	var data := ElectricLevels.get_daily_challenge(current_daily_index)
 	current_min_moves = int(data.get("min_moves", 4))
+	current_max_moves = int(data.get("max_moves", 0))
+	if out_of_moves_modal != null and is_instance_valid(out_of_moves_modal):
+		out_of_moves_modal.queue_free()
+		out_of_moves_modal = null
 	_update_moves_display()
 	_update_header_coins()
 	
@@ -262,6 +268,10 @@ func load_level(level_idx: int) -> void:
 	
 	var data := ElectricLevels.get_level(current_level_num)
 	current_min_moves = int(data.get("min_moves", 2))
+	current_max_moves = int(data.get("max_moves", 0))
+	if out_of_moves_modal != null and is_instance_valid(out_of_moves_modal):
+		out_of_moves_modal.queue_free()
+		out_of_moves_modal = null
 	_update_moves_display()
 	_update_header_coins()
 	
@@ -374,16 +384,26 @@ func _on_tile_clicked(r: int, c: int) -> void:
 func _update_moves_display() -> void:
 	if not is_instance_valid(moves_label):
 		return
-	moves_label.text = "Moves: %d  |  Par: %d" % [player_moves, current_min_moves]
-	if player_moves <= current_min_moves:
-		# Optimal / 3 stars
-		moves_label.add_theme_color_override("font_color", Color(0.2, 0.95, 0.85, 1.0))
-	elif player_moves <= current_min_moves + 2:
-		# 2 stars
-		moves_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35, 1.0))
+	if current_max_moves > 0:
+		moves_label.text = "Moves: %d / %d  |  Par: %d" % [player_moves, current_max_moves, current_min_moves]
+		var moves_left := current_max_moves - player_moves
+		if moves_left <= 3:
+			moves_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35, 1.0))
+		elif player_moves <= current_min_moves:
+			moves_label.add_theme_color_override("font_color", Color(0.2, 0.95, 0.85, 1.0))
+		else:
+			moves_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35, 1.0))
 	else:
-		# 1 star
-		moves_label.add_theme_color_override("font_color", Color(0.9, 0.6, 0.6, 1.0))
+		moves_label.text = "Moves: %d  |  Par: %d" % [player_moves, current_min_moves]
+		if player_moves <= current_min_moves:
+			# Optimal / 3 stars
+			moves_label.add_theme_color_override("font_color", Color(0.2, 0.95, 0.85, 1.0))
+		elif player_moves <= current_min_moves + 2:
+			# 2 stars
+			moves_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35, 1.0))
+		else:
+			# 1 star
+			moves_label.add_theme_color_override("font_color", Color(0.9, 0.6, 0.6, 1.0))
 
 func _evaluate_circuit(play_sfx: bool = true) -> void:
 	# 1. Multi-source BFS starting from each battery and solar panel to find circuit paths & distance hops
@@ -439,20 +459,17 @@ func _evaluate_circuit(play_sfx: bool = true) -> void:
 					if next_step > max_wave_step:
 						max_wave_step = next_step
 						
-					# Check tile type
-					if neighbor_tile.tile_type == ElectricEnums.TileType.BULB:
-						if neighbor_tile.channel == ElectricEnums.Channel.NONE or neighbor_tile.channel == curr_ch:
-							if not neighbor_tile.is_powered:
-								newly_lit_element = true
-								max_new_target_step = maxi(max_new_target_step, next_step)
-							if not powered_results.has(neighbor_pos):
-								powered_results[neighbor_pos] = {"channel": curr_ch, "step": next_step, "inlet": opp_dir}
-					elif neighbor_tile.tile_type in [
+					var is_target_element: bool = neighbor_tile.tile_type in [
+						ElectricEnums.TileType.BULB,
 						ElectricEnums.TileType.HEATER,
 						ElectricEnums.TileType.FAN,
 						ElectricEnums.TileType.VACUUM_TUBE,
-						ElectricEnums.TileType.TESLA_COIL
-					]:
+						ElectricEnums.TileType.TESLA_COIL,
+						ElectricEnums.TileType.HOUSE_SMALL,
+						ElectricEnums.TileType.HOUSE_BIG,
+						ElectricEnums.TileType.BUILDING
+					]
+					if is_target_element:
 						if neighbor_tile.channel == ElectricEnums.Channel.NONE or neighbor_tile.channel == curr_ch:
 							if not neighbor_tile.is_powered:
 								newly_lit_element = true
@@ -523,6 +540,12 @@ func _evaluate_circuit(play_sfx: bool = true) -> void:
 		get_tree().create_timer(wave_finish_time).timeout.connect(func():
 			if not is_level_completed:
 				_trigger_victory()
+		)
+	elif not all_targets_lit and current_max_moves > 0 and player_moves >= current_max_moves and not is_level_completed and play_sfx:
+		var check_time := float(max_wave_step) * step_interval + 0.35
+		get_tree().create_timer(check_time).timeout.connect(func():
+			if not is_level_completed and not all_targets_lit and current_max_moves > 0 and player_moves >= current_max_moves:
+				_show_out_of_moves_dialog()
 		)
 
 func _trigger_victory() -> void:
@@ -2021,3 +2044,106 @@ func _show_hint_depleted_dialog() -> void:
 	close_btn.add_theme_font_override("font", GAME_FONT)
 	close_btn.pressed.connect(func(): hint_dialog_layer.visible = false)
 	vbox.add_child(close_btn)
+
+func _show_out_of_moves_dialog() -> void:
+	if out_of_moves_modal != null and is_instance_valid(out_of_moves_modal):
+		out_of_moves_modal.visible = true
+		return
+		
+	out_of_moves_modal = Control.new()
+	out_of_moves_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	out_of_moves_modal.z_index = 65
+	add_child(out_of_moves_modal)
+	
+	var backdrop := ColorRect.new()
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0.01, 0.03, 0.08, 0.88)
+	out_of_moves_modal.add_child(backdrop)
+	
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	out_of_moves_modal.add_child(center)
+	
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(420, 270)
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.08, 0.13, 0.22, 0.98)
+	card_style.border_color = Color(1.0, 0.35, 0.35, 1.0)
+	card_style.set_border_width_all(2)
+	card_style.set_corner_radius_all(18)
+	card.add_theme_stylebox_override("panel", card_style)
+	center.add_child(card)
+	
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 22)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_right", 22)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	card.add_child(margin)
+	
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	margin.add_child(vbox)
+	
+	var title := Label.new()
+	title.text = "⚡ OUT OF MOVES ⚡"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", GAME_FONT)
+	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45, 1.0))
+	vbox.add_child(title)
+	
+	var desc := Label.new()
+	desc.text = "The switching budget ran out before all consumers could be powered!"
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc.add_theme_font_override("font", SUB_FONT)
+	desc.add_theme_font_size_override("font_size", 14)
+	desc.add_theme_color_override("font_color", Color(0.85, 0.90, 0.98, 0.95))
+	vbox.add_child(desc)
+	
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 12)
+	vbox.add_child(btn_row)
+	
+	var retry_btn := Button.new()
+	retry_btn.text = "↺ RETRY"
+	retry_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	retry_btn.custom_minimum_size = Vector2(0, 46)
+	retry_btn.add_theme_font_override("font", GAME_FONT)
+	retry_btn.add_theme_font_size_override("font_size", 15)
+	var retry_style := StyleBoxFlat.new()
+	retry_style.bg_color = Color(0.20, 0.28, 0.40, 0.95)
+	retry_style.border_color = Color(0.40, 0.55, 0.75, 1.0)
+	retry_style.set_border_width_all(2)
+	retry_style.set_corner_radius_all(10)
+	retry_btn.add_theme_stylebox_override("normal", retry_style)
+	retry_btn.pressed.connect(func():
+		out_of_moves_modal.queue_free()
+		out_of_moves_modal = null
+		if is_daily_mode:
+			load_daily_challenge(current_daily_index)
+		else:
+			load_level(current_level_num)
+	)
+	btn_row.add_child(retry_btn)
+	
+	var extra_btn := Button.new()
+	extra_btn.text = "+5 MOVES"
+	extra_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	extra_btn.custom_minimum_size = Vector2(0, 46)
+	extra_btn.add_theme_font_override("font", GAME_FONT)
+	extra_btn.add_theme_font_size_override("font_size", 15)
+	var extra_style := StyleBoxFlat.new()
+	extra_style.bg_color = Color(0.12, 0.55, 0.42, 0.95)
+	extra_style.border_color = Color(0.25, 0.95, 0.75, 1.0)
+	extra_style.set_border_width_all(2)
+	extra_style.set_corner_radius_all(10)
+	extra_btn.add_theme_stylebox_override("normal", extra_style)
+	extra_btn.pressed.connect(func():
+		current_max_moves += 5
+		_update_moves_display()
+		out_of_moves_modal.queue_free()
+		out_of_moves_modal = null
+	)
+	btn_row.add_child(extra_btn)
