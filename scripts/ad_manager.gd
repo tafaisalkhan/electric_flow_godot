@@ -80,13 +80,15 @@ func _load_banner_top() -> void:
 		print("[AdManager] Top Banner loaded successfully! (ID: %s)" % banner_id)
 	_banner_top_cb.on_ad_failed_to_load = func(_err):
 		print("[AdManager] Top Banner failed to load with ID %s: %s" % [banner_id, str(_err)])
-		if banner_id != TEST_BANNER_AD_ID and not GameState.ads_removed:
-			print("[AdManager] Live ads not serving yet - falling back to Google Test Banner...")
-			banner_id = TEST_BANNER_AD_ID
-			if _banner_view_top and _banner_view_top.has_method("destroy"):
-				_banner_view_top.destroy()
-			_banner_view_top = null
-			_load_banner_top()
+		if not GameState.ads_removed:
+			# Retry loading live banner after delay
+			var tw := instance.create_tween() if is_instance_valid(instance) else null
+			if tw:
+				tw.tween_interval(20.0)
+				tw.tween_callback(func():
+					if _banner_view_top == null and not GameState.ads_removed:
+						_load_banner_top()
+				)
 	_banner_view_top.ad_listener = _banner_top_cb
 	_banner_view_top.load_ad(AdRequest.new())
 
@@ -100,13 +102,15 @@ func _load_banner_bottom() -> void:
 		print("[AdManager] Bottom Banner loaded successfully! (ID: %s)" % banner_id)
 	_banner_bottom_cb.on_ad_failed_to_load = func(_err):
 		print("[AdManager] Bottom Banner failed to load with ID %s: %s" % [banner_id, str(_err)])
-		if banner_id != TEST_BANNER_AD_ID and not GameState.ads_removed:
-			print("[AdManager] Live ads not serving yet - falling back to Google Test Banner...")
-			banner_id = TEST_BANNER_AD_ID
-			if _banner_view_bottom and _banner_view_bottom.has_method("destroy"):
-				_banner_view_bottom.destroy()
-			_banner_view_bottom = null
-			_load_banner_bottom()
+		if not GameState.ads_removed:
+			# Retry loading live banner after delay
+			var tw := instance.create_tween() if is_instance_valid(instance) else null
+			if tw:
+				tw.tween_interval(20.0)
+				tw.tween_callback(func():
+					if _banner_view_bottom == null and not GameState.ads_removed:
+						_load_banner_bottom()
+				)
 	_banner_view_bottom.ad_listener = _banner_bottom_cb
 	_banner_view_bottom.load_ad(AdRequest.new())
 
@@ -179,10 +183,15 @@ func _load_interstitial() -> void:
 	_interstitial_cb.on_ad_failed_to_load = func(_err) -> void:
 		_interstitial_ad = null
 		print("[AdManager] Interstitial failed to load with ID %s: %s" % [interstitial_id, str(_err)])
-		if interstitial_id != TEST_INTERSTITIAL_AD_ID and not GameState.ads_removed:
-			print("[AdManager] Live ads not serving yet - falling back to Google Test Interstitial...")
-			interstitial_id = TEST_INTERSTITIAL_AD_ID
-			_load_interstitial()
+		if not GameState.ads_removed:
+			# Retry loading live interstitial after short delay
+			var tw := instance.create_tween() if is_instance_valid(instance) else null
+			if tw:
+				tw.tween_interval(30.0)
+				tw.tween_callback(func():
+					if _interstitial_ad == null and not GameState.ads_removed:
+						_load_interstitial()
+				)
 
 	loader.load(interstitial_id, AdRequest.new(), _interstitial_cb)
 

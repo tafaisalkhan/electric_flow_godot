@@ -12,16 +12,20 @@ static var _json_loaded: bool = false
 static func get_total_levels() -> int:
 	return 99999
 
-static func get_daily_challenge() -> Dictionary:
+static func get_daily_challenge(daily_index: int = 1) -> Dictionary:
 	var date_dict := Time.get_date_dict_from_system()
 	var y: int = int(date_dict.get("year", 2026))
 	var m: int = int(date_dict.get("month", 1))
 	var d: int = int(date_dict.get("day", 1))
 	var daily_seed: int = absi(y * 10000 + m * 100 + d)
-	var daily_num: int = 200000 + (daily_seed % 50000)
+	var daily_num: int = 200000 + ((daily_seed + (daily_index - 1) * 7919) % 50000)
 	var lvl := _generate_procedural_level(daily_num)
-	lvl["title"] = "Daily %02d/%02d" % [m, d]
+	if daily_index <= 1:
+		lvl["title"] = "Daily %02d/%02d" % [m, d]
+	else:
+		lvl["title"] = "Daily %02d/%02d #%d" % [m, d, daily_index]
 	lvl["is_daily"] = true
+	lvl["daily_index"] = daily_index
 	return lvl
 
 static func _ensure_json_loaded() -> void:

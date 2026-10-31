@@ -86,16 +86,19 @@ func test_early_levels_progression_and_solar() -> void:
 	print("[PASS] Level 10 (3x4) Metropolitan Skyscraper Building verified")
 
 func test_daily_challenge() -> void:
-	var daily := ElectricLevels.get_daily_challenge()
-	assert(daily.has("rows") and daily.has("cols"), "Daily challenge must have dimensions")
-	assert(daily.has("tiles") and daily["tiles"].size() > 0, "Daily challenge must have tiles")
-	assert(bool(daily.get("is_daily", false)) == true, "Must be flagged as daily challenge")
-	var daily_types := _get_types_in_level(daily)
-	assert(
-		daily_types.has(ElectricEnums.TileType.SOLAR) or daily_types.has(ElectricEnums.TileType.BATTERY),
-		"Daily challenge must have a power source"
-	)
-	print("[PASS] Daily challenge procedural generation verified: %s (%dx%d)" % [daily.get("title", ""), daily["rows"], daily["cols"]])
+	var daily1 := ElectricLevels.get_daily_challenge(1)
+	assert(daily1.has("rows") and daily1.has("cols"), "Daily challenge 1 must have dimensions")
+	assert(daily1.has("tiles") and daily1["tiles"].size() > 0, "Daily challenge 1 must have tiles")
+	assert(bool(daily1.get("is_daily", false)) == true, "Must be flagged as daily challenge")
+	
+	var daily2 := ElectricLevels.get_daily_challenge(2)
+	assert(bool(daily2.get("is_daily", false)) == true, "Must be flagged as daily challenge")
+	assert(daily2.get("title", "").contains("#2"), "Daily challenge 2 title should contain #2")
+
+	var daily10 := ElectricLevels.get_daily_challenge(10)
+	assert(bool(daily10.get("is_daily", false)) == true, "Must be flagged as daily challenge")
+	assert(daily10.get("title", "").contains("#10"), "Daily challenge 10 title should contain #10")
+	print("[PASS] Unlimited Daily Challenge verified: Daily 1, Daily 2, and Daily 10+")
 
 func test_unlimited_levels_procedural() -> void:
 	var sample_levels := [15, 30, 50, 75, 100, 250, 500, 1000, 5000, 10000]

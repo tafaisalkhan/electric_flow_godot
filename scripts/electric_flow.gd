@@ -90,6 +90,7 @@ var current_codex_index: int = 0
 
 var current_level_num: int = 1
 var is_daily_mode: bool = false
+var current_daily_index: int = 1
 var board_rows: int = 3
 var board_cols: int = 3
 var grid_tiles: Dictionary = {} # Vector2i -> ElectricTile
@@ -228,12 +229,13 @@ func _on_viewport_resized() -> void:
 	_apply_safe_area()
 	_layout_board()
 
-func load_daily_challenge() -> void:
+func load_daily_challenge(daily_idx: int = 1) -> void:
 	is_daily_mode = true
+	current_daily_index = maxi(1, daily_idx)
 	is_level_completed = false
 	player_moves = 0
 	
-	var data := ElectricLevels.get_daily_challenge()
+	var data := ElectricLevels.get_daily_challenge(current_daily_index)
 	current_min_moves = int(data.get("min_moves", 4))
 	_update_moves_display()
 	_update_header_coins()
@@ -293,7 +295,8 @@ func _build_board_from_data(data: Dictionary) -> void:
 	var tiles_data: Array = data.get("tiles", [])
 	
 	if landmark_display:
-		landmark_display.configure_level(current_level_num if not is_daily_mode else 100, board_rows, board_cols)
+		var feat_type := ElectricComponentData.get_primary_component_for_level(current_level_num)
+		landmark_display.configure_level(current_level_num if not is_daily_mode else 100, board_rows, board_cols, feat_type)
 	
 	# Create tiles
 	for r in range(board_rows):
@@ -633,7 +636,7 @@ func _trigger_victory() -> void:
 		next_button.disabled = true
 		next_button.modulate.a = 0.45
 		next_button.scale = Vector2(0.85, 0.85)
-		next_button.text = "MAIN MENU" if is_daily_mode else "NEXT LEVEL"
+		next_button.text = "NEXT DAILY ▶" if is_daily_mode else "NEXT LEVEL"
 
 func _setup_victory_ui_elements() -> void:
 	# Initial reset of victory elements
@@ -876,8 +879,9 @@ func _on_next_level_pressed() -> void:
 		return
 	_play_click_sfx()
 	if is_daily_mode:
-		GameState.game_mode = "continue"
-		get_tree().change_scene_to_file("res://scenes/menu.tscn")
+		if (levels_completed_count > 0 and levels_completed_count % 3 == 0) or (current_daily_index % 3 == 0):
+			AdManager.show_interstitial()
+		load_daily_challenge(current_daily_index + 1)
 		return
 	if (levels_completed_count > 0 and levels_completed_count % 3 == 0) or (current_level_num % 3 == 0):
 		AdManager.show_interstitial()
@@ -892,12 +896,16 @@ func _on_restart_pressed() -> void:
 		AudioManager.play_lose()
 	_show_restart_toast()
 	if is_daily_mode:
-		load_daily_challenge()
+		load_daily_challenge(current_daily_index)
 	else:
 		load_level(current_level_num)
 
 func _on_prev_quick_pressed() -> void:
 	_play_click_sfx()
+	if is_daily_mode:
+		if current_daily_index > 1:
+			load_daily_challenge(current_daily_index - 1)
+		return
 	if current_level_num > 1:
 		load_level(current_level_num - 1)
 	else:
@@ -905,6 +913,9 @@ func _on_prev_quick_pressed() -> void:
 
 func _on_next_quick_pressed() -> void:
 	_play_click_sfx()
+	if is_daily_mode:
+		load_daily_challenge(current_daily_index + 1)
+		return
 	if current_level_num < ElectricLevels.get_total_levels():
 		load_level(current_level_num + 1)
 	else:
@@ -1812,13 +1823,23 @@ func _update_level_nav() -> void:
 	_update_hint_display()
 	_update_header_coins()
 	if is_daily_mode:
+		var date := Time.get_date_dict_from_system()
 		if is_instance_valid(prev_level_pill_btn):
-			prev_level_pill_btn.visible = false
+			if current_daily_index > 1:
+				prev_level_pill_btn.visible = true
+				prev_level_pill_btn.disabled = false
+				prev_level_pill_btn.text = "< #%d" % (current_daily_index - 1)
+			else:
+				prev_level_pill_btn.visible = false
 		if is_instance_valid(next_level_pill_btn):
-			next_level_pill_btn.visible = false
+			next_level_pill_btn.visible = true
+			next_level_pill_btn.disabled = false
+			next_level_pill_btn.text = "#%d >" % (current_daily_index + 1)
 		if is_instance_valid(header_level_label):
-			var date := Time.get_date_dict_from_system()
-			header_level_label.text = "DAILY %02d/%02d" % [int(date.month), int(date.day)]
+			if current_daily_index <= 1:
+				header_level_label.text = "DAILY %02d/%02d" % [int(date.month), int(date.day)]
+			else:
+				header_level_label.text = "DAILY %02d/%02d #%d" % [int(date.month), int(date.day), current_daily_index]
 		return
 		
 	if is_instance_valid(prev_level_pill_btn):

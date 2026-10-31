@@ -39,14 +39,21 @@ func _process(delta: float) -> void:
 		window_ignite_progress = maxf(0.0, window_ignite_progress - delta * 4.0)
 	queue_redraw()
 
-func configure_level(level_num: int, rows: int, cols: int) -> void:
-	var total_tiles := rows * cols
-	if total_tiles <= 9 or level_num <= 10:
+func configure_level(level_num: int, rows: int, cols: int, target_type: int = -1) -> void:
+	if target_type == ElectricEnums.TileType.HOUSE_SMALL:
 		current_structure = StructureType.SMALL_HOUSE
-	elif total_tiles <= 16 or level_num <= 40:
+	elif target_type == ElectricEnums.TileType.HOUSE_BIG:
 		current_structure = StructureType.BIG_HOUSE
-	else:
+	elif target_type == ElectricEnums.TileType.BUILDING:
 		current_structure = StructureType.CITY_BUILDING
+	else:
+		var total_tiles := rows * cols
+		if total_tiles <= 9 or level_num <= 7:
+			current_structure = StructureType.SMALL_HOUSE
+		elif total_tiles <= 16 or level_num <= 24:
+			current_structure = StructureType.BIG_HOUSE
+		else:
+			current_structure = StructureType.CITY_BUILDING
 	
 	is_fully_powered = false
 	power_ratio = 0.0

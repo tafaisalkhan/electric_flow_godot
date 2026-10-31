@@ -82,7 +82,7 @@ func _refresh_ui() -> void:
 			{"id": "music", "label": "Music", "enabled": GameState.music_enabled},
 			{"id": "sound", "label": "Sound Effects", "enabled": GameState.sfx_enabled}
 		],
-		"settings_actions": [{"id": "advanced", "label": "Difficulty & More Options"}],
+		"settings_actions": [],
 		"shop_items": themed_items,
 		"store_products": [
 			{"id": "coins_500", "name": "Pouch of Coins", "description": "500 coins", "price": "Price in Google Play"},
